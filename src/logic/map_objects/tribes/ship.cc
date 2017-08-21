@@ -453,11 +453,10 @@ void Ship::ship_update_idle(Game& game, Bob::State& state) {
 			std::vector<Bob*> ships;
 			map.find_bobs(area, &ships, FindBobShip());
 
-			for (std::vector<Bob*>::const_iterator it = ships.begin(); it != ships.end(); ++it) {
-				if (*it == this)
-					continue;
-
-				dirs[dir] += 3;
+			for (const Bob* ship : ships) {
+				if (ship != this) {
+					dirs[dir] += 3;
+				}
 			}
 
 			dirmax = std::max(dirmax, dirs[dir]);

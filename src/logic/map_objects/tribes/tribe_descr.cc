@@ -475,8 +475,8 @@ void TribeDescr::resize_ware_orders(size_t maxLength) {
 	bool need_resize = false;
 
 	// Check if we actually need to resize.
-	for (WaresOrder::iterator it = wares_order_.begin(); it != wares_order_.end(); ++it) {
-		if (it->size() > maxLength) {
+	for (const auto& index_list: wares_order_) {
+		if (index_list.size() > maxLength) {
 			need_resize = true;
 		}
 	}
@@ -484,16 +484,15 @@ void TribeDescr::resize_ware_orders(size_t maxLength) {
 	// Build new smaller wares_order.
 	if (need_resize) {
 		WaresOrder new_wares_order;
-		for (WaresOrder::iterator it = wares_order_.begin(); it != wares_order_.end(); ++it) {
+		for (const auto& index_list: wares_order_) {
 			new_wares_order.push_back(std::vector<Widelands::DescriptionIndex>());
-			for (std::vector<Widelands::DescriptionIndex>::iterator it2 = it->begin();
-			     it2 != it->end(); ++it2) {
+			for (const auto& ware_index: index_list) {
 				if (new_wares_order.rbegin()->size() >= maxLength) {
 					new_wares_order.push_back(std::vector<Widelands::DescriptionIndex>());
 				}
-				new_wares_order.rbegin()->push_back(*it2);
-				wares_order_coords_[*it2].first = new_wares_order.size() - 1;
-				wares_order_coords_[*it2].second = new_wares_order.rbegin()->size() - 1;
+				new_wares_order.rbegin()->push_back(ware_index);
+				wares_order_coords_[ware_index].first = new_wares_order.size() - 1;
+				wares_order_coords_[ware_index].second = new_wares_order.rbegin()->size() - 1;
 			}
 		}
 

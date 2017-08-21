@@ -1473,12 +1473,11 @@ void ProductionProgram::ActConstruct::execute(Game& game, ProductionSite& psite)
 	const ImmovableDescr& descr = get_construction_descr(game.tribes());
 
 	// Early check for no resources
-	const Buildcost& buildcost = descr.buildcost();
 	DescriptionIndex available_resource = INVALID_INDEX;
 
-	for (Buildcost::const_iterator it = buildcost.begin(); it != buildcost.end(); ++it) {
-		if (psite.inputqueue(it->first, wwWARE).get_filled() > 0) {
-			available_resource = it->first;
+	for (const auto& buildcost : descr.buildcost()) {
+		if (psite.inputqueue(buildcost.first, wwWARE).get_filled() > 0) {
+			available_resource = buildcost.first;
 			break;
 		}
 	}
@@ -1566,8 +1565,8 @@ bool ProductionProgram::ActConstruct::get_building_work(Game& game,
 		remaining = descr.buildcost();
 	}
 
-	for (Buildcost::const_iterator it = remaining.begin(); it != remaining.end(); ++it) {
-		WaresQueue& thiswq = dynamic_cast<WaresQueue&>(psite.inputqueue(it->first, wwWARE));
+	for (const auto& buildcost : remaining) {
+		WaresQueue& thiswq = dynamic_cast<WaresQueue&>(psite.inputqueue(buildcost.first, wwWARE));
 		if (thiswq.get_filled() > 0) {
 			wq = &thiswq;
 			break;

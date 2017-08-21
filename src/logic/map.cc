@@ -234,13 +234,11 @@ void Map::recalc_default_resources(const World& world) {
 
 			int32_t lv = 0;
 			int32_t res = 0;
-			std::map<int32_t, int32_t>::iterator i = m.begin();
-			while (i != m.end()) {
-				if (i->second > lv) {
-					lv = i->second;
-					res = i->first;
+			for (const auto& item : m) {
+				if (item.second > lv) {
+					lv = item.second;
+					res = item.first;
 				}
-				++i;
 			}
 			amount /= 6;
 
@@ -373,16 +371,16 @@ void Map::set_origin(const Coords& new_origin) {
 			}
 		}
 
-	// Take care about port spaces
+	// Take care of port spaces
 	PortSpacesSet new_port_spaces;
-	for (PortSpacesSet::iterator it = port_spaces_.begin(); it != port_spaces_.end(); ++it) {
+	for (const Coords& port_space : port_spaces_) {
 		Coords temp;
-		if (yisodd && ((it->y % 2) == 0))
-			temp = Coords(it->x - new_origin.x - 1, it->y - new_origin.y);
+		if (yisodd && ((port_space.y % 2) == 0))
+			temp = Coords(port_space.x - new_origin.x - 1, port_space.y - new_origin.y);
 		else
-			temp = Coords(it->x - new_origin.x, it->y - new_origin.y);
+			temp = Coords(port_space.x - new_origin.x, port_space.y - new_origin.y);
 		normalize_coords(temp);
-		log("(%i,%i) -> (%i,%i)\n", it->x, it->y, temp.x, temp.y);
+		log("(%i,%i) -> (%i,%i)\n", port_space.x, port_space.y, temp.x, temp.y);
 		new_port_spaces.insert(temp);
 	}
 	port_spaces_ = new_port_spaces;

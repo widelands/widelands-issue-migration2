@@ -1010,8 +1010,8 @@ bool GameHost::can_launch() {
 		return false;
 
 	// if there is one client that is currently receiving a file, we can not launch.
-	for (std::vector<Client>::iterator j = d->clients.begin(); j != d->clients.end(); ++j) {
-		if (!d->settings.users[j->usernum].ready)
+	for (const Client& client : d->clients) {
+		if (!d->settings.users[client.usernum].ready)
 			return false;
 	}
 

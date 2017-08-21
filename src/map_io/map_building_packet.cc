@@ -170,23 +170,21 @@ void MapBuildingPacket::write_priorities(const Building& building, FileWrite& fw
 	fw.unsigned_32(0);
 
 	std::map<int32_t, std::map<DescriptionIndex, int32_t>> type_to_priorities;
-	std::map<int32_t, std::map<DescriptionIndex, int32_t>>::iterator it;
 
 	const TribeDescr& tribe = building.owner().tribe();
 	building.collect_priorities(type_to_priorities);
-	for (it = type_to_priorities.begin(); it != type_to_priorities.end(); ++it) {
-		if (it->second.empty())
+	for (const auto& type_priorities : type_to_priorities) {
+		if (type_priorities.second.empty())
 			continue;
 
 		// write ware type and priority count
-		const int32_t ware_type = it->first;
+		const int32_t ware_type = type_priorities.first;
 		fw.unsigned_8(ware_type);
-		fw.unsigned_8(it->second.size());
+		fw.unsigned_8(type_priorities.second.size());
 
-		std::map<DescriptionIndex, int32_t>::iterator it2;
-		for (it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+		for (const auto& prio : type_priorities.second) {
 			std::string name;
-			DescriptionIndex const ware_index = it2->first;
+			const DescriptionIndex ware_index = prio.first;
 			if (wwWARE == ware_type)
 				name = tribe.get_ware_descr(ware_index)->name();
 			else if (wwWORKER == ware_type)
@@ -195,7 +193,7 @@ void MapBuildingPacket::write_priorities(const Building& building, FileWrite& fw
 				throw GameDataError("unrecognized ware type %d while writing priorities", ware_type);
 
 			fw.c_string(name.c_str());
-			fw.unsigned_32(it2->second);
+			fw.unsigned_32(prio.second);
 		}
 	}
 

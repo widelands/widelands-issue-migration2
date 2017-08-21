@@ -267,9 +267,9 @@ void FullscreenMenuMapSelect::fill_table() {
 				   has_translated_mapname_ || (mapdata.name != mapdata.localized_name);
 
 				bool has_all_tags = true;
-				for (std::set<uint32_t>::const_iterator it = req_tags_.begin(); it != req_tags_.end();
-				     ++it)
-					has_all_tags &= mapdata.tags.count(tags_ordered_[*it]);
+				for (const uint32_t tag_index : req_tags_) {
+					has_all_tags &= mapdata.tags.count(tags_ordered_[tag_index]);
+				}
 				if (!has_all_tags) {
 					continue;
 				}

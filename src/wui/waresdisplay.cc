@@ -22,7 +22,7 @@
 #include <cstdio>
 #include <utility>
 
-#include <boost/lexical_cast.hpp>
+#include <boost/format.hpp>
 
 #include "base/i18n.h"
 #include "base/wexception.h"
@@ -415,23 +415,19 @@ void WaresDisplay::add_warelist(const Widelands::WareList& wares) {
 
 std::string waremap_to_richtext(const Widelands::TribeDescr& tribe,
                                 const std::map<Widelands::DescriptionIndex, uint8_t>& map) {
-	std::string ret;
-
-	std::map<Widelands::DescriptionIndex, uint8_t>::const_iterator c;
-
-	Widelands::TribeDescr::WaresOrder::iterator i;
-	std::vector<Widelands::DescriptionIndex>::iterator j;
-	Widelands::TribeDescr::WaresOrder order = tribe.wares_order();
-
-	for (i = order.begin(); i != order.end(); ++i)
-		for (j = i->begin(); j != i->end(); ++j)
-			if ((c = map.find(*j)) != map.end()) {
-				ret += "<div width=30 padding=2><p align=center>"
-				       "<div width=26 background=454545><p align=center><img src=\"" +
-				       tribe.get_ware_descr(c->first)->icon_filename() +
-				       "\"></p></div><div width=26 background=000000><p><font size=9>" +
-				       boost::lexical_cast<std::string>(static_cast<int32_t>(c->second)) +
-				       "</font></p></div></p></div>";
+	std::string result;
+	for (const auto& index_list: tribe.wares_order()) {
+		for (const auto& ware_index: index_list) {
+			if (map.count(ware_index) == 1) {
+				const unsigned int amount = map.at(ware_index);
+				result += (boost::format("<div width=30 padding=2><p align=center>"
+				       "<div width=26 background=454545><p align=center><img src=\""
+				       "%s"
+				       "\"></p></div><div width=26 background=000000><p><font size=9>"
+				       "%d"
+				       "</font></p></div></p></div>") % tribe.get_ware_descr(ware_index)->icon_filename() % static_cast<unsigned int>(amount)).str();
 			}
-	return ret;
+		}
+	}
+	return result;
 }

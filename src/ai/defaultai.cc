@@ -1953,9 +1953,9 @@ bool DefaultAI::construct_building(uint32_t gametime) {
 	for (int32_t i = 0; i < 4; ++i)
 		spots_avail.at(i) = 0;
 
-	for (std::list<BuildableField*>::iterator i = buildable_fields.begin();
-	     i != buildable_fields.end(); ++i)
-		++spots_avail.at((*i)->coords.field->nodecaps() & BUILDCAPS_SIZEMASK);
+	for (BuildableField* const bf : buildable_fields) {
+		++spots_avail.at(bf->coords.field->nodecaps() & BUILDCAPS_SIZEMASK);
+	}
 
 	spots_ = spots_avail.at(BUILDCAPS_SMALL);
 	spots_ += spots_avail.at(BUILDCAPS_MEDIUM);
@@ -2369,10 +2369,7 @@ bool DefaultAI::construct_building(uint32_t gametime) {
 	}
 
 	// first scan all buildable fields for regular buildings
-	for (std::list<BuildableField*>::iterator i = buildable_fields.begin();
-	     i != buildable_fields.end(); ++i) {
-		BuildableField* const bf = *i;
-
+	for (BuildableField* const bf : buildable_fields) {
 		if (bf->field_info_expiration < gametime) {
 			continue;
 		}
@@ -2920,11 +2917,7 @@ bool DefaultAI::construct_building(uint32_t gametime) {
 				}
 
 				// iterating over fields
-				for (std::list<MineableField*>::iterator j = mineable_fields.begin();
-				     j != mineable_fields.end(); ++j) {
-
-					MineableField* const mf = *j;
-
+				for (MineableField* const mf : mineable_fields) {
 					if (mf->field_info_expiration <= gametime) {
 						continue;
 					}
@@ -5167,12 +5160,11 @@ uint32_t DefaultAI::calculate_stocklevel(BuildingObserver& bo, const WareWorker 
 uint32_t DefaultAI::calculate_stocklevel(Widelands::DescriptionIndex wt, const WareWorker what) {
 	uint32_t count = 0;
 
-	for (std::list<WarehouseSiteObserver>::iterator i = warehousesites.begin();
-	     i != warehousesites.end(); ++i) {
+	for (const auto& warehouse : warehousesites) {
 		if (what == WareWorker::kWare) {
-			count += i->site->get_wares().stock(wt);
+			count += warehouse.site->get_wares().stock(wt);
 		} else {
-			count += i->site->get_workers().stock(wt);
+			count += warehouse.site->get_workers().stock(wt);
 		}
 	}
 
@@ -5266,9 +5258,11 @@ void DefaultAI::consider_productionsite_influence(BuildableField& field,
 
 /// \returns the economy observer containing \arg economy
 EconomyObserver* DefaultAI::get_economy_observer(Economy& economy) {
-	for (std::list<EconomyObserver*>::iterator i = economies.begin(); i != economies.end(); ++i)
-		if (&(*i)->economy == &economy)
-			return *i;
+	for (EconomyObserver* eco : economies) {
+		if (&eco->economy == &economy) {
+			return eco;
+		}
+	}
 
 	economies.push_front(new EconomyObserver(economy));
 	return economies.front();

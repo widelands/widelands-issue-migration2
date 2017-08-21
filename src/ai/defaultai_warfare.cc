@@ -111,10 +111,9 @@ bool DefaultAI::check_enemy_sites(uint32_t const gametime) {
 	const bool strong_enough = player_statistics.strong_enough(pn);
 
 	// removing sites we saw too long ago
-	for (std::map<uint32_t, EnemySiteObserver>::iterator site = enemy_sites.begin();
-	     site != enemy_sites.end(); ++site) {
-		if (site->second.last_time_seen + 20 * 60 * 1000 < gametime) {
-			disappeared_sites.push_back(site->first);
+	for (const auto& site : enemy_sites) {
+		if (site.second.last_time_seen + 20 * 60 * 1000 < gametime) {
+			disappeared_sites.push_back(site.first);
 		}
 	}
 	while (!disappeared_sites.empty()) {
@@ -750,10 +749,8 @@ bool DefaultAI::check_trainingsites(uint32_t gametime) {
 	}
 
 	ts_without_trainers_ = 0;  // zeroing
-	for (std::list<TrainingSiteObserver>::iterator site = trainingsites.begin();
-	     site != trainingsites.end(); ++site) {
-
-		if (!site->site->can_start_working()) {
+	for (const auto& site : trainingsites) {
+		if (!site.site->can_start_working()) {
 			ts_without_trainers_ += 1;
 		}
 	}

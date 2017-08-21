@@ -367,7 +367,7 @@ void FieldDebugWindow::think() {
 	for (uint32_t idx = 0; idx < ui_bobs_.size(); idx++) {
 		Widelands::MapObject* mo = ibase().egbase().objects().get_object(ui_bobs_[idx]);
 		bool toremove = false;
-		std::vector<Widelands::Bob*>::iterator removeIt;
+		std::vector<Widelands::Bob*>::iterator remove_it;
 		// Nested loop :(
 
 		for (std::vector<Widelands::Bob*>::iterator bob_iter = bobs.begin(); bob_iter != bobs.end();
@@ -377,12 +377,12 @@ void FieldDebugWindow::think() {
 				// Remove from the bob list if we already
 				// have it in our list
 				toremove = true;
-				removeIt = bob_iter;
+				remove_it = bob_iter;
 				break;
 			}
 		}
 		if (toremove) {
-			bobs.erase(removeIt);
+			bobs.erase(remove_it);
 			continue;
 		}
 		// Remove from our list if its not in the bobs

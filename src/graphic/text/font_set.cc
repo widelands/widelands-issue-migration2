@@ -199,14 +199,14 @@ FontSets::FontSets() {
 		                                                   // as needed
 
 		for (const std::string& filename : files) {  // Begin scan locales directory
-			char const* const path = filename.c_str();
-			if (!strcmp(FileSystem::fs_filename(path), ".") ||
-			    !strcmp(FileSystem::fs_filename(path), "..") || !g_fs->is_directory(path)) {
+			const char* const char_filename = filename.c_str();
+			if (!strcmp(FileSystem::fs_filename(char_filename), ".") ||
+			    !strcmp(FileSystem::fs_filename(char_filename), "..") || !g_fs->is_directory(filename)) {
 				continue;
 			}
 
 			try {  // Begin read locale from table
-				localename = g_fs->filename_without_ext(path);
+				localename = g_fs->filename_without_ext(filename.c_str());
 				std::unique_ptr<LuaTable> locale_table = all_locales->get_table(localename);
 				locale_table
 				   ->do_not_warn_about_unaccessed_keys();  // We are only reading the fontset names

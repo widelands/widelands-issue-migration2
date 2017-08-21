@@ -268,17 +268,18 @@ void RealFSImpl::unlink_directory(const std::string& file) {
 	}
 
 	FilenameSet files = list_directory(file);
-	for (FilenameSet::iterator pname = files.begin(); pname != files.end(); ++pname) {
-		std::string filename = fs_filename(pname->c_str());
+	for (const std::string& pname : files) {
+		std::string filename = fs_filename(pname.c_str());
 		if (filename == "..")
 			continue;
 		if (filename == ".")
 			continue;
 
-		if (is_directory(*pname))
-			unlink_directory(*pname);
-		else
-			unlink_file(*pname);
+		if (is_directory(pname)) {
+			unlink_directory(pname);
+		} else {
+			unlink_file(pname);
+		}
 	}
 
 // NOTE: this might fail if this directory contains CVS dir,

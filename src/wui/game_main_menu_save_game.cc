@@ -184,13 +184,11 @@ void GameMainMenuSaveGame::fill_list() {
 
 	Widelands::GamePreloadPacket gpdp;
 
-	for (FilenameSet::iterator pname = gamefiles.begin(); pname != gamefiles.end(); ++pname) {
-		char const* const name = pname->c_str();
-
+	for (const std::string& name : gamefiles) {
 		try {
 			Widelands::GameLoader gl(name, igbase().game());
 			gl.preload_game(gpdp);
-			ls_.add(FileSystem::filename_without_ext(name), name);
+			ls_.add(FileSystem::filename_without_ext(name.c_str()), name);
 		} catch (const WException&) {
 		}  //  we simply skip illegal entries
 	}

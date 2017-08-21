@@ -284,9 +284,8 @@ FieldOverlayManager::OverlayId InteractiveBase::show_work_area(const WorkareaInf
 	Widelands::HollowArea<> hollow_area(Widelands::Area<>(coords, 0), 0);
 
 	// Iterate through the work areas, from building to its enhancement
-	WorkareaInfo::const_iterator it = workarea_info.begin();
-	for (; it != workarea_info.end(); ++it) {
-		hollow_area.radius = it->first;
+	for (const auto& info : workarea_info) {
+		hollow_area.radius = info.first;
 		Widelands::MapHollowRegion<> mr(map, hollow_area);
 		do
 			field_overlay_manager_->register_overlay(mr.location(), workarea_pics_[wa_index],

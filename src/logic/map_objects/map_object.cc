@@ -174,6 +174,18 @@ void ObjectManager::remove(MapObject& obj) {
 	objects_.erase(obj.serial_);
 }
 
+bool ObjectManager::object_still_available(const MapObject* const t) const {
+	if (!t) {
+		return false;
+	}
+	for (const auto& object_map : objects_) {
+		if (object_map.second == t) {
+			return true;
+		}
+	}
+	return false;
+}
+
 /*
  * Return the list of all serials currently in use
  */

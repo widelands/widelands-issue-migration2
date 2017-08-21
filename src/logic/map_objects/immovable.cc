@@ -1111,8 +1111,9 @@ void ImmovableProgram::ActConstruction::execute(Game& g, Immovable& imm) const {
 
 		// Otherwise, this is a decay timeout
 		uint32_t totaldelivered = 0;
-		for (Buildcost::const_iterator it = d->delivered.begin(); it != d->delivered.end(); ++it)
-			totaldelivered += it->second;
+		for (const auto& cost : d->delivered) {
+			totaldelivered += cost.second;
+		}
 
 		if (!totaldelivered) {
 			imm.remove(g);

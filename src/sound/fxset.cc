@@ -33,13 +33,9 @@ FXset::FXset(uint8_t const priority) : last_used_(0), priority_(priority) {
 
 /// Delete all fxs to avoid memory leaks. This also frees the audio data.
 FXset::~FXset() {
-	std::vector<Mix_Chunk*>::iterator i = fxs_.begin();
-
-	while (i != fxs_.end()) {
-		Mix_FreeChunk(*i);
-		++i;
+	for (Mix_Chunk* chunk : fxs_) {
+		Mix_FreeChunk(chunk);
 	}
-
 	fxs_.clear();
 }
 

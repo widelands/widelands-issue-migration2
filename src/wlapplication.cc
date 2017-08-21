@@ -975,14 +975,10 @@ void WLApplication::handle_commandline_parameters() {
 	// override a conffile setting
 	// With typos, this will create invalid config settings. They
 	// will be taken care of (==ignored) when saving the options
-
-	const std::map<std::string, std::string>::const_iterator commandline_end = commandline_.end();
-	for (std::map<std::string, std::string>::const_iterator it = commandline_.begin();
-	     it != commandline_end; ++it) {
+	for (const auto& val : commandline_) {
 		// TODO(unknown): barf here on unknown option; the list of known options
 		// needs to be centralized
-
-		g_options.pull_section("global").create_val(it->first.c_str(), it->second.c_str());
+		g_options.pull_section("global").create_val(val.first.c_str(), val.second.c_str());
 	}
 
 	if (commandline_.count("help") || commandline_.count("version")) {

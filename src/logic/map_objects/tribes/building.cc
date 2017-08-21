@@ -650,11 +650,10 @@ void Building::collect_priorities(std::map<int32_t, std::map<DescriptionIndex, i
 	if (ware_priorities_.empty())
 		return;
 	std::map<DescriptionIndex, int32_t>& ware_priorities = p[wwWARE];
-	std::map<DescriptionIndex, int32_t>::const_iterator it;
-	for (it = ware_priorities_.begin(); it != ware_priorities_.end(); ++it) {
-		if (it->second == DEFAULT_PRIORITY)
-			continue;
-		ware_priorities[it->first] = it->second;
+	for (const auto& priority : ware_priorities_) {
+		if (priority.second != DEFAULT_PRIORITY) {
+			ware_priorities[priority.first] = priority.second;
+		}
 	}
 }
 

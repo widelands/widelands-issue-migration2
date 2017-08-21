@@ -94,15 +94,16 @@ std::set<std::string> LayeredFileSystem::list_directory(const std::string& path)
 	// Check home system first
 	if (home_) {
 		files = home_->list_directory(path);
-		for (FilenameSet::iterator fnit = files.begin(); fnit != files.end(); ++fnit)
-			results.insert(*fnit);
+		for (const std::string filename : files) {
+			results.insert(filename);
+		}
 	}
 
-	for (auto it = filesystems_.rbegin(); it != filesystems_.rend(); ++it) {
-		files = (*it)->list_directory(path);
-
-		for (FilenameSet::iterator fnit = files.begin(); fnit != files.end(); ++fnit)
-			results.insert(*fnit);
+	for (const auto& fs : filesystems_) {
+		files = fs->list_directory(path);
+		for (const std::string filename : files) {
+			results.insert(filename);
+		}
 	}
 	return results;
 }

@@ -405,15 +405,14 @@ bool Warehouse::load_finish_planned_worker(PlannedWorkers& pw) {
 	const WorkerDescr::Buildcost& cost = w_desc->buildcost();
 	uint32_t idx = 0;
 
-	for (WorkerDescr::Buildcost::const_iterator cost_it = cost.begin(); cost_it != cost.end();
-	     ++cost_it, ++idx) {
+	for (const auto& cost_item : cost) {
 		WareWorker type;
 		DescriptionIndex wareindex;
-		wareindex = owner().tribe().ware_index(cost_it->first);
+		wareindex = owner().tribe().ware_index(cost_item.first);
 		if (owner().tribe().has_ware(wareindex)) {
 			type = wwWARE;
 		} else {
-			wareindex = owner().tribe().worker_index(cost_it->first);
+			wareindex = owner().tribe().worker_index(cost_item.first);
 			if (owner().tribe().has_worker(wareindex)) {
 				type = wwWORKER;
 			} else {
@@ -440,7 +439,7 @@ bool Warehouse::load_finish_planned_worker(PlannedWorkers& pw) {
 
 		log("load_finish_planned_worker: old savegame: "
 		    "need to create new request for '%s'\n",
-		    cost_it->first.c_str());
+		    cost_item.first.c_str());
 		pw.requests.insert(
 		   pw.requests.begin() + idx, new Request(*this, wareindex, &Warehouse::request_cb, type));
 	}
