@@ -32,6 +32,7 @@
 #include "logic/map_objects/tribes/building.h"
 #include "logic/map_objects/tribes/production_program.h"
 #include "logic/map_objects/tribes/program_result.h"
+#include "logic/map_objects/tribes/working_positions.h"
 #include "scripting/lua_table.h"
 
 namespace Widelands {
@@ -172,16 +173,9 @@ public:
 	}
 	void set_stopped(bool);
 
-	struct WorkingPosition {
-		WorkingPosition(Request* const wr = nullptr, Worker* const w = nullptr)
-		   : worker_request(wr), worker(w) {
-		}
-		Request* worker_request;
-		Worker* worker;
-	};
-
-	WorkingPosition const* working_positions() const {
-		return working_positions_;
+	// NOCOM(#sirver): ugly. Can we get rid of this?
+	WorkingPositions* working_positions() {
+		return &working_positions_;
 	}
 
 	virtual bool has_workers(DescriptionIndex targetSite, Game& game);
@@ -258,9 +252,7 @@ protected:
 		}
 	};
 
-	Request& request_worker(DescriptionIndex);
-	static void
-	request_worker_callback(Game&, Request&, DescriptionIndex, Worker*, PlayerImmovable&);
+	void worker_arrived(Game*, Worker*);
 
 	/**
 	 * Determine the next program to be run when the last program has finished.
@@ -295,7 +287,7 @@ protected:
 	}
 
 protected:  // TrainingSite must have access to this stuff
-	WorkingPosition* working_positions_;
+	WorkingPositions working_positions_;
 
 	int32_t fetchfromflag_;  ///< Number of wares to fetch from flag
 
@@ -374,6 +366,13 @@ struct NoteProductionSiteOutOfResources {
 	   : ps(init_ps), player(init_player) {
 	}
 };
+
+// Parses the descriptions of the working positions from 'items_table' and
+// fills in 'working_positions'. Throws an error if the table contains invalid
+// values.
+void parse_working_positions(const EditorGameBase& egbase,
+                             LuaTable* items_table,
+                             BillOfMaterials* working_positions);
 
 }  // namespace Widelands
 

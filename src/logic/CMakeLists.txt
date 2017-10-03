@@ -210,6 +210,8 @@ wl_library(logic
     map_objects/tribes/worker_descr.h
     map_objects/tribes/worker_program.cc
     map_objects/tribes/worker_program.h
+    map_objects/tribes/working_positions.cc
+    map_objects/tribes/working_positions.h
     map_objects/walkingdir.cc
     map_objects/walkingdir.h
     map_objects/world/critter.cc
