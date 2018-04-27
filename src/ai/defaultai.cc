@@ -70,6 +70,8 @@ constexpr int32_t kSpotsEnough = 25;
 
 constexpr uint16_t kTargetQuantCap = 30;
 
+constexpr uint8_t kPreciousnessCap = 25;
+
 // this is intended for map developers & testers, should be off by default
 constexpr bool kPrintStats = false;
 
@@ -2544,8 +2546,8 @@ bool DefaultAI::construct_building(uint32_t gametime) {
 		                         bo.new_building == BuildingNecessity::kNeeded);
 		if (ai_training_mode_ && bo.type == BuildingObserver::Type::kProductionsite &&
 		    (gametime % 20 == 0 || log_needed)) {
-			log("%2d: %-35s(%2d now) %-11s: max prec: %2d/%2d, primary priority: %4d, overdue: %3d\n",
-			    player_number(), bo.name, bo.total_count(), (log_needed) ? "needed" : "not needed",
+			log("%2d: %-35s(%2d now, prod: %3d) %-11s: max prec: %2d/%2d, primary priority: %4d, overdue: %3d\n",
+			    player_number(), bo.name, bo.total_count(), bo.current_stats, (log_needed) ? "needed" : "not needed",
 			    bo.max_needed_preciousness, bo.max_preciousness, bo.primary_priority,
 			    bo.new_building_overdue);
 		}
@@ -4838,10 +4840,19 @@ BuildingNecessity DefaultAI::check_building_necessity(BuildingObserver& bo,
 			// at least  1
 			target = std::max<uint16_t>(target, 1);
 
-			// it seems there are wares with 0 preciousness (no entry in init files?), but we need
-			// positive value here.
-			const uint16_t preciousness =
-			   std::max<uint16_t>(wares.at(bo.outputs.at(m)).preciousness, 1);
+			// We need to have value in range 1 - kPreciousnessCap. If ware preciousness is not set in init.lua
+			// it gets 1 as default. otherwise it is just capped to kPreciousnessCap
+			const uint16_t preciousness = (wares.at(bo.outputs.at(m)).preciousness == kInvalidWare) ? 1 :
+			   std::min<uint16_t>(std::max<uint16_t>(wares.at(bo.outputs.at(m)).preciousness, 1), kPreciousnessCap);
+			if (wares.at(bo.outputs.at(m)).preciousness > kPreciousnessCap) {
+				log ("AI WARNING: Preciousness for %s (%s) received as: %d%s, capping to %d.%s\n",
+				 tribe_->get_ware_descr(wt)->descname().c_str(),
+				 tribe_->name().c_str(),
+				 wares.at(bo.outputs.at(m)).preciousness,
+				 (wares.at(bo.outputs.at(m)).preciousness == kInvalidWare) ? " (kInvalidWare)" : "",
+				 preciousness,
+				 (wares.at(bo.outputs.at(m)).preciousness == kInvalidWare) ? " Perhaps not set in init.lua" : " Value in init.lua too high.");
+			}
 
 			if (calculate_stocklevel(wt) < target ||
 			    site_needed_for_economy == BasicEconomyBuildingStatus::kEncouraged) {
@@ -4857,6 +4868,8 @@ BuildingNecessity DefaultAI::check_building_necessity(BuildingObserver& bo,
 			if (bo.max_preciousness < preciousness) {
 				bo.max_preciousness = preciousness;
 			}
+			assert(bo.max_preciousness <= kPreciousnessCap);
+			assert(bo.max_needed_preciousness <= kPreciousnessCap);
 		}
 	}
 
