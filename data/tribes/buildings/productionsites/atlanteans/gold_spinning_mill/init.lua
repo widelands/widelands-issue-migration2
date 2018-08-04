@@ -50,6 +50,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start spinning gold because ...
          descname = _"spinning gold",
          actions = {
+            -- time total: 40
+            -- average: 40
             "sleep=15000",
             "return=skipped unless economy needs gold_thread",
             "consume=gold",

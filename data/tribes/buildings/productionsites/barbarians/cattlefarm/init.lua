@@ -52,6 +52,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start rearing cattle because ...
          descname = pgettext("barbarians_building", "rearing cattle"),
          actions = {
+            -- time total: 30
+            -- average: 30
             "sleep=15000",
             "return=skipped unless economy needs barbarians_ox",
             "consume=wheat water",

@@ -52,6 +52,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start grinding wheat because ...
          descname = _"grinding wheat",
          actions = {
+            -- time total: 18.6
+            -- average: 18.6
             "sleep=5000",
             "return=skipped unless economy needs flour",
             "consume=wheat",

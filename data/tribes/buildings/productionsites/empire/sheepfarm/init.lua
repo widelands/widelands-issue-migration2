@@ -53,6 +53,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start breeding sheep because ...
          descname = _"breeding sheep",
          actions = {
+            -- time total: 58.6
+            -- average: 58.6
             "sleep=25000",
             "return=skipped unless economy needs wool",
             "consume=water wheat",

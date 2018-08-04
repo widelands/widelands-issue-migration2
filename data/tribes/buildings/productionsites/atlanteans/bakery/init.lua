@@ -54,6 +54,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start baking bread because ...
          descname = pgettext("atlanteans_building", "baking bread"),
          actions = {
+            -- total time: 72.2
+            -- average 36.1
             "sleep=35000",
             "return=skipped unless economy needs atlanteans_bread",
             "consume=water:2 blackroot_flour cornmeal",

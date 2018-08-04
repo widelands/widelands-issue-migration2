@@ -57,6 +57,9 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start mining marble because ...
          descname = _"mining marble",
          actions = {
+            -- time total: 97
+            -- average marble: 32.3
+            -- average granite 48.5
             "sleep=43000",
             "return=skipped unless economy needs marble or economy needs granite",
             "consume=meal wine",

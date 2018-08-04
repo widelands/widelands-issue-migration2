@@ -52,6 +52,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start sawing logs because ...
          descname = _"sawing logs",
          actions = {
+            -- total time: 40.1
+            -- average: 40.1
             "sleep=16500", -- Much faster than barbarians' wood hardener
             "return=skipped unless economy needs planks",
             "consume=log:2",

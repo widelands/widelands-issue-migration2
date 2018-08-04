@@ -52,6 +52,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start breeding horses because ...
          descname = pgettext("atlanteans_building", "breeding horses"),
          actions = {
+            -- time total: 30
+            -- average: 30
             "sleep=15000",
             "return=skipped unless economy needs atlanteans_horse",
             "consume=corn water",

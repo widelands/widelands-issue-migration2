@@ -52,6 +52,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start working because ...
          descname = _"working",
          actions = {
+            -- time total: 58.6
+            -- average: 58.6
             "sleep=25000",
             "return=skipped unless economy needs spider_silk",
             "consume=corn water",

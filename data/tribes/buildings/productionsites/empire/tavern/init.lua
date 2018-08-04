@@ -55,7 +55,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start preparing a ration because ...
          descname = _"preparing a ration",
          actions = {
-            -- time total: 33
+            -- time total: 36.6
+            -- average: 36.6
             "sleep=14000",
             "return=skipped unless economy needs ration",
             "consume=empire_bread,fish,meat",

@@ -51,6 +51,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start producing coal because ...
          descname = _"producing coal",
          actions = {
+            -- time total: 123.6
+            -- average: 123.6
             "sleep=30000",
             "return=skipped unless economy needs coal",
             "consume=log:6",

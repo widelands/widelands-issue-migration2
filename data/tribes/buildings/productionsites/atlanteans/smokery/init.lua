@@ -57,6 +57,19 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start working because ...
          descname = _"working",
          actions = {
+            -- smoked meat and smoked fish is needed
+            -- time total: 201.6
+            -- average smoked meat: 100.8
+            -- average smoked fish: 50.4
+            
+            -- only smoked meat is needed
+            -- time total: 67.2
+            -- average smoked meat: 33.6
+            
+            -- only smoked fish is needed
+            -- time total: 134.4
+            -- average smoked fish: 33.6
+            
             "call=smoke_fish",
             "call=smoke_meat",
             "call=smoke_fish",
@@ -67,7 +80,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start smoking meat because ...
          descname = _"smoking meat",
          actions = {
-            -- time total: 60
+            -- time total: 67.2
+            -- average: 33.6
             "return=skipped when site has fish and economy needs smoked_fish and not economy needs smoked_meat",
             "return=skipped unless economy needs smoked_meat",
             "sleep=10000",
@@ -81,7 +95,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start smoking fish because ...
          descname = _"smoking fish",
          actions = {
-            -- time total: 60
+            -- time total: 67.2
+            -- average: 33.6
             "return=skipped when site has meat and economy needs smoked_meat and not economy needs smoked_fish",
             "return=skipped unless economy needs smoked_fish",
             "sleep=10000",

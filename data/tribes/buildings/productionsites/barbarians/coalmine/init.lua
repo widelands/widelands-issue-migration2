@@ -60,6 +60,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start mining coal because ...
          descname = _"mining coal",
          actions = {
+            -- time total: 72.2
+            -- average: 36.1
             "sleep=45000",
             "return=skipped unless economy needs coal",
             "consume=ration",

@@ -55,6 +55,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start making wine because ...
          descname = _"making wine",
          actions = {
+            -- time total: 63.6
+            -- average: 63.6
             -- Grapes are only needed for wine, so no need to check if wine is needed
             "sleep=30000",
             "consume=grape:2",

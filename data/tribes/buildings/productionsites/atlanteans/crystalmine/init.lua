@@ -60,6 +60,44 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start working because ...
          descname = _"working",
          actions = {
+            -- granite, quartz and diamond needed
+            -- total time: 389
+            -- average granite: 43.2
+            -- average quartz: 97.3
+            -- average diamond: 194.5
+            
+            -- only granite and quartz needed
+            -- total time: 273.2
+            -- average granite: 34.2
+            -- average quartz: 68.3
+            
+            -- only granite and diamond needed
+            -- total time: 262.4
+            -- average granite: 43.7
+            -- average quartz: 262.4
+            -- average diamond: 131.2
+            
+            -- only quartz and diamond needed
+            -- total time: 242.4
+            -- average granite: 60.6
+            -- average quartz: 80.8
+            -- average diamond: 121.2
+            
+            -- only granite is needed
+            -- time total: 146.6
+            -- average granite: 29.3
+            -- average quartz: 146.6
+            
+            -- only quartz is needed
+            -- time total: 126.6
+            -- average granite: 42.2
+            -- average quartz: 42.2
+            
+            -- only diamond is needed
+            -- time total: 115.8
+            -- average granite: 115.8
+            -- average diamond: 57.9
+            
             "call=mine_granite",
             "call=mine_quartz",
             "call=mine_diamond",
@@ -70,6 +108,9 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start mining granite because ...
          descname = _"mining granite",
          actions = {
+            -- time total: 146.6
+            -- average granite: 29.3
+            -- average quartz: 146.6
             "return=skipped unless economy needs granite",
             "sleep=45000",
             "consume=smoked_fish,smoked_meat:2 atlanteans_bread:2",
@@ -91,6 +132,9 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start mining quartz because ...
          descname = _"mining quartz",
          actions = {
+            -- time total: 126.6
+            -- average granite: 42.2
+            -- average quartz: 42.2
             "return=skipped unless economy needs quartz",
             "sleep=45000",
             "consume=smoked_fish,smoked_meat:2 atlanteans_bread:2",
@@ -109,6 +153,9 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start mining diamonds because ...
          descname = _"mining diamonds",
          actions = {
+            -- time total: 115.8
+            -- average granite: 115.8
+            -- average diamond: 57.9
             "return=skipped unless economy needs diamond",
             "sleep=45000",
             "consume=smoked_fish,smoked_meat:2 atlanteans_bread:2",

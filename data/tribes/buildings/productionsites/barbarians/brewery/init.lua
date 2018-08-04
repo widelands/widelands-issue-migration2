@@ -50,6 +50,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start brewing strong beer because ...
          descname = _"brewing strong beer",
          actions = {
+            -- time total: 63.6
+            -- average: 63.6
             "sleep=30000",
             "return=skipped unless economy needs beer_strong",
             "consume=water wheat",

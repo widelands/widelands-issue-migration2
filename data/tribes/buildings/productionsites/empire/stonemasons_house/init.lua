@@ -53,6 +53,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start sculpting a marble column because ...
          descname = _"sculpting a marble column",
          actions = {
+            -- time total: 85.6
+            -- average: 85.6
             "sleep=50000",
             "return=skipped unless economy needs marble_column",
             "consume=marble:2",

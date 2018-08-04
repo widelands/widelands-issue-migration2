@@ -60,6 +60,21 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start working because ...
          descname = _"working",
          actions = {
+            -- marble and granite are needed
+            -- time total: 145.2
+            -- average marble: 48.4
+            -- average granite 36.6
+            
+            -- only marble is needed
+            -- time total: 70.8
+            -- average marble: 35.4
+            -- average granite 70.8
+            
+            -- only granite is needed
+            -- time total: 74.4
+            -- average marble: 74.4
+            -- average granite 24.8
+            
             "call=mine_marble",
             "call=mine_granite",
             "return=skipped"
@@ -69,6 +84,9 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start mining marble because ...
          descname = _"mining marble",
          actions = {
+            -- time total: 70.8
+            -- average marble: 35.4
+            -- average granite 70.8
             "sleep=20000",
             "return=skipped unless economy needs marble or economy needs granite",
             "consume=wine ration",
@@ -84,6 +102,9 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start mining granite because ...
          descname = _"mining granite",
          actions = {
+            -- time total: 74.4
+            -- average marble: 74.4
+            -- average granite 24.8
             "sleep=20000",
             "return=skipped unless economy needs marble or economy needs granite",
             "consume=ration wine",

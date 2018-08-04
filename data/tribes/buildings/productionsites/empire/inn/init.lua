@@ -53,6 +53,18 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start working because ...
          descname = _"working",
          actions = {
+            -- ration and meal are needed
+            -- time total: 80.2
+            -- average: 40.1
+            
+            -- only ration is needed
+            -- time total: 36.6
+            -- average: 36.6
+            
+            -- only meal is needed
+            -- time total: 43.6
+            -- average: 43.6
+            
             "call=produce_ration",
             "call=produce_meal",
             "return=skipped"
@@ -62,7 +74,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start preparing a ration because ...
          descname = _"preparing a ration",
          actions = {
-            -- time total: 33
+            -- time total: 36.6
+            -- average: 36.6
             "return=skipped unless economy needs ration",
             "sleep=10000",
             "consume=empire_bread,fish,meat",
@@ -76,7 +89,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start preparing a meal because ...
          descname = _"preparing a meal",
          actions = {
-            -- time total: 40
+            -- time total: 43.6
+            -- average: 43.6
             "return=skipped unless economy needs meal",
             "sleep=10000",
             "consume=empire_bread fish,meat",

@@ -55,6 +55,19 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start working because ...
          descname = _"working",
          actions = {
+            -- cornmeal and blackroot_flour is needed 
+            -- time total: 44.2
+            -- average cornmeal: 44.2
+            -- average blackroot_flour: 44.2
+            
+            -- only cornmeal is needed
+            -- time total: 22,1
+            -- average cornmeal: 22,1
+            
+            -- only blackroot_flour is needed
+            -- time total: 22,1
+            -- average blackroot_flour: 22,1
+            
             "call=produce_cornmeal",
             "call=produce_blackroot_flour",
             "return=skipped"
@@ -64,6 +77,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start grinding corn because ...
          descname = _"grinding corn",
          actions = {
+            -- time total: 22,1
+            -- average: 22,1
             "return=skipped when site has blackroot and economy needs blackroot_flour and not economy needs cornmeal",
             "return=skipped unless economy needs cornmeal",
             "sleep=3500",
@@ -77,6 +92,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start grinding blackrootbecause ...
          descname = _"grinding blackroot",
          actions = {
+            -- time total: 22,1
+            -- average: 22,1
             -- No check whether we need blackroot_flour because blackroots cannot be used for anything else.
             "return=skipped when site has corn and economy needs cornmeal and not economy needs blackroot_flour",
             "sleep=3500",

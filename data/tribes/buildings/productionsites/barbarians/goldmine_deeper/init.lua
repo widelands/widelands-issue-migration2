@@ -59,6 +59,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start mining gold because ...
          descname = _"mining gold",
          actions = {
+            -- time total: 88.4
+            -- average: 22.1
             "sleep=40000",
             "return=skipped unless economy needs gold_ore",
             "consume=meal",

@@ -59,6 +59,38 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start working because ...
          descname = _"working",
          actions = {
+            -- ration, snack and meal needed
+            -- time total: 120.8
+            -- average ration: 120.8
+            -- average snack: 120.8
+            -- average meal: 120.8
+            
+            -- only ration and snack needed
+            -- time total: 77.2
+            -- average ration: 77.2
+            -- average snack: 77.2
+            
+            -- only ration and meal needed
+            -- time total: 80.2
+            -- average ration: 80.2
+            -- average meal: 80.2
+            
+            -- only snack and meal needed
+            -- time total: 84.2
+            -- average snack: 84.2
+            -- average meal: 84.2
+            
+            -- only ration needed
+            -- time total: 36.6
+            -- average: 36.6
+            
+            -- only snack needed
+            -- time total: 40.6
+            -- average: 40.6
+            
+            -- only meal needed
+            -- time total: 43.6
+            -- average: 43.6
             "call=produce_ration",
             "call=produce_snack",
             "call=produce_meal",
@@ -69,7 +101,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start preparing a ration because ...
          descname = _"preparing a ration",
          actions = {
-            -- time total: 33
+            -- time total: 36.6
+            -- average: 36.6
             "return=skipped unless economy needs ration",
             "sleep=23000",
             "consume=barbarians_bread,fish,meat",
@@ -82,7 +115,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start preparing a snack because ...
          descname = _"preparing a snack",
          actions = {
-            -- time total: 37
+            -- time total: 40.6
+            -- average: 40.6
             "return=skipped unless economy needs snack",
             "sleep=5000",
             "consume=barbarians_bread fish,meat beer",
@@ -95,7 +129,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start preparing a meal because ...
          descname = _"preparing a meal",
          actions = {
-            -- time total: 40
+            -- time total: 43.6
+            -- average: 43.6
             "return=skipped unless economy needs meal",
             "sleep=5000",
             "consume=barbarians_bread fish,meat beer_strong",

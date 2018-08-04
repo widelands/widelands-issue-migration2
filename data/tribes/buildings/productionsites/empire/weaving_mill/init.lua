@@ -59,6 +59,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start weaving because ...
          descname = _"weaving",
          actions = {
+            -- time total: 43.6
+            -- average: 43.6
             "sleep=5000",
             "return=skipped unless economy needs cloth",
             "consume=wool",

@@ -76,6 +76,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start working because ...
          descname = _"working",
          actions = {
+            -- time total: 706
+            -- average: 70.6
             "call=produce_bread_paddle",
             "call=produce_felling_ax",
             "call=produce_fire_tongs",
@@ -93,6 +95,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start making a bread paddle because ...
          descname = _"making a bread paddle",
          actions = {
+            -- time total: 70.6
+            -- average: 70.6
             "return=skipped unless economy needs bread_paddle",
             "sleep=32000",
             "consume=iron log",
@@ -117,6 +121,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start making fire tongs because ...
          descname = _"making fire tongs",
          actions = {
+            -- time total: 70.6
+            -- average: 70.6
             "return=skipped unless economy needs fire_tongs",
             "sleep=32000",
             "consume=iron log",
@@ -129,6 +135,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start making a fishing rod because ...
          descname = _"making a fishing rod",
          actions = {
+            -- time total: 70.6
+            -- average: 70.6
             "return=skipped unless economy needs fishing_rod",
             "sleep=32000",
             "consume=iron log",
@@ -141,6 +149,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start making a hammer because ...
          descname = _"making a hammer",
          actions = {
+            -- time total: 70.6
+            -- average: 70.6
             "return=skipped unless economy needs hammer",
             "sleep=32000",
             "consume=iron log",
@@ -153,6 +163,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start making a hunting spear because ...
          descname = _"making a hunting spear",
          actions = {
+            -- time total: 70.6
+            -- average: 70.6
             "return=skipped unless economy needs hunting_spear",
             "sleep=32000",
             "consume=iron log",
@@ -165,6 +177,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start making kitchen tools because ...
          descname = _"making kitchen tools",
          actions = {
+            -- time total: 70.6
+            -- average: 70.6
             "return=skipped unless economy needs kitchen_tools",
             "sleep=32000",
             "consume=iron log",
@@ -177,6 +191,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start making a pick because ...
          descname = _"making a pick",
          actions = {
+            -- time total: 70.6
+            -- average: 70.6
             "return=skipped unless economy needs pick",
             "sleep=32000",
             "consume=iron log",
@@ -189,6 +205,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start making a scythe because ...
          descname = _"making a scythe",
          actions = {
+            -- time total: 70.6
+            -- average: 70.6
             "return=skipped unless economy needs scythe",
             "sleep=32000",
             "consume=iron log",

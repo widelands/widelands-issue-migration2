@@ -54,6 +54,8 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start mixing grout because ...
          descname = _"mixing grout",
          actions = {
+            -- time total: 89.2
+            -- average: 44.6
             "sleep=50000",
             "return=skipped unless economy needs grout",
             "consume=coal granite:2 water:2",
