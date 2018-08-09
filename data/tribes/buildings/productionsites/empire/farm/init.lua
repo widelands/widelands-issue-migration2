@@ -50,6 +50,9 @@ tribes:new_productionsite_type {
          -- TRANSLATORS: Completed/Skipped/Did not start working because ...
          descname = _"working",
          actions = {
+            -- best time total: 64.4
+            -- worst time total: 86
+            -- average: 75.2
             "call=plant",
             "call=harvest",
             "return=skipped"
