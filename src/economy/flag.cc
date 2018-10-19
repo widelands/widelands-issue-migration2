@@ -53,7 +53,8 @@ Flag::Flag()
      ware_capacity_(8),
      ware_filled_(0),
      wares_(new PendingWare[ware_capacity_]),
-     always_call_for_flag_(nullptr) {
+     always_call_for_flag_(nullptr),
+	 last_update_(0) {
 	for (uint32_t i = 0; i < 6; ++i) {
 		roads_[i] = nullptr;
 	}
@@ -118,7 +119,8 @@ Flag::Flag(EditorGameBase& egbase, Player* owning_player, const Coords& coords, 
      ware_capacity_(8),
      ware_filled_(0),
      wares_(new PendingWare[ware_capacity_]),
-     always_call_for_flag_(nullptr) {
+     always_call_for_flag_(nullptr),
+	 last_update_(egbase.get_gametime()) {
 	for (uint32_t i = 0; i < 6; ++i) {
 		roads_[i] = nullptr;
 	}
@@ -201,6 +203,7 @@ void Flag::set_economy(Economy* const e) {
  * Call this only from the Building init!
  */
 void Flag::attach_building(EditorGameBase& egbase, Building& building) {
+	last_update_ = egbase.get_gametime();
 	assert(!building_ || building_ == &building);
 
 	building_ = &building;
@@ -217,6 +220,7 @@ void Flag::attach_building(EditorGameBase& egbase, Building& building) {
  * Call this only from the Building cleanup!
  */
 void Flag::detach_building(EditorGameBase& egbase) {
+	last_update_ = egbase.get_gametime();
 	assert(building_);
 
 	building_->set_economy(nullptr);
@@ -372,14 +376,16 @@ bool Flag::has_capacity() const {
  *
  * The capacity queue is a simple FIFO queue.
  */
-void Flag::wait_for_capacity(Game&, Worker& bob) {
+void Flag::wait_for_capacity(Game& game, Worker& bob) {
+	last_update_ = game.get_gametime();
 	capacity_wait_.push_back(&bob);
 }
 
 /**
  * Remove the worker from the list of workers waiting for free capacity.
  */
-void Flag::skip_wait_for_capacity(Game&, Worker& w) {
+void Flag::skip_wait_for_capacity(Game& game, Worker& w) {
+	last_update_ = game.get_gametime();
 	CapacityWaitQueue::iterator const it =
 	   std::find(capacity_wait_.begin(), capacity_wait_.end(), &w);
 	if (it != capacity_wait_.end())
@@ -391,6 +397,7 @@ void Flag::skip_wait_for_capacity(Game&, Worker& w) {
  * Please check has_capacity() or better has_capacity_for_ware() before.
  */
 void Flag::add_ware(EditorGameBase& egbase, WareInstance& ware) {
+	last_update_ = egbase.get_gametime();
 	assert(ware_filled_ < ware_capacity_);
 	init_ware(egbase, ware, wares_[ware_filled_++]);
 	if (upcast(Game, game, &egbase)) {
@@ -402,6 +409,7 @@ void Flag::add_ware(EditorGameBase& egbase, WareInstance& ware) {
  * Properly assigns given ware instance to given pending ware.
  */
 void Flag::init_ware(EditorGameBase& egbase, WareInstance& ware, PendingWare& pi) {
+	last_update_ = egbase.get_gametime();
 	pi.ware = &ware;
 	pi.pending = true;
 	pi.nextstep = nullptr;
@@ -456,6 +464,7 @@ Flag::PendingWare* Flag::get_ware_for_flag(Flag& destflag, bool const pending_on
  * made pending again.
  */
 bool Flag::cancel_pickup(Game& game, Flag& destflag) {
+	last_update_ = game.get_gametime();
 	for (int32_t i = 0; i < ware_filled_; ++i) {
 		PendingWare& pw = wares_[i];
 		if (!pw.pending && pw.nextstep == &destflag) {
@@ -571,6 +580,7 @@ WareInstance* Flag::fetch_pending_ware(Game& game, int32_t best_index) {
 	if (best_index < 0) {
 		return nullptr;
 	}
+	last_update_ = game.get_gametime();
 
 	// move the other wares up the list and return this one
 	WareInstance* const ware = wares_[best_index].ware;
@@ -587,6 +597,7 @@ WareInstance* Flag::fetch_pending_ware(Game& game, int32_t best_index) {
  * which may be interested in the new state of this flag.
  */
 void Flag::ware_departing(Game& game) {
+	last_update_ = game.get_gametime();
 	// Wake up one sleeper from the capacity queue.
 	while (!capacity_wait_.empty()) {
 		Worker* const w = capacity_wait_.front().get(game);
@@ -675,6 +686,7 @@ Flag::Wares Flag::get_wares() {
  * Called by \ref WareInstance::cleanup()
  */
 void Flag::remove_ware(EditorGameBase& egbase, WareInstance* const ware) {
+	last_update_ = egbase.get_gametime();
 	for (int32_t i = 0; i < ware_filled_; ++i) {
 		if (wares_[i].ware != ware) {
 			continue;
@@ -708,6 +720,7 @@ void Flag::remove_ware(EditorGameBase& egbase, WareInstance* const ware) {
  * split, for example.
  */
 void Flag::call_carrier(Game& game, WareInstance& ware, PlayerImmovable* const nextstep) {
+	last_update_ = game.get_gametime();
 	PendingWare* pi = nullptr;
 	int32_t i = 0;
 
@@ -813,6 +826,7 @@ bool Flag::allow_ware_from_flag(WareInstance& ware, Flag& flag) {
  * \return false if the ware is not immediately served.
  */
 bool Flag::update_ware_from_flag(Game& game, PendingWare& pw1, Road& road, Flag& flag) {
+	last_update_ = game.get_gametime();
 	WareInstance& w1 = *pw1.ware;
 	DescriptionIndex const w1_descr_index = w1.descr_index();
 	bool has_same_ware = false;
@@ -858,6 +872,7 @@ bool Flag::update_ware_from_flag(Game& game, PendingWare& pw1, Road& road, Flag&
  * A similar thing can happen when a road is split.
  */
 void Flag::update_wares(Game& game, Flag* const other) {
+	last_update_ = game.get_gametime();
 	always_call_for_flag_ = other;
 
 	for (int32_t i = 0; i < ware_filled_; ++i) {
@@ -868,6 +883,7 @@ void Flag::update_wares(Game& game, Flag* const other) {
 }
 
 bool Flag::init(EditorGameBase& egbase) {
+	last_update_ = egbase.get_gametime();
 	PlayerImmovable::init(egbase);
 
 	set_position(egbase, position_);
@@ -982,6 +998,20 @@ void Flag::log_general_info(const Widelands::EditorGameBase& egbase) const {
 		}
 	} else {
 		molog("No wares at flag.\n");
+	}
+}
+
+void Flag::unfreeze_wares(Game& game) {
+	const int gametime = game.get_gametime();
+	if (gametime > last_update_ + kTriggerPotentiallyFrozenFlagInterval) {
+		if (ware_filled_ > 0) {
+			log("Unfreezing flag for Player %d at (%d, %d) - %d wares\n", static_cast<unsigned int>(owner().player_number()), get_position().x, get_position().y, ware_filled_);
+		}
+		last_update_ = gametime;
+		for (int32_t i = 0; i < ware_filled_; ++i) {
+			init_ware(game, *wares_[i].ware, wares_[i]);
+			wares_[i].ware->update(game);
+		}
 	}
 }
 }

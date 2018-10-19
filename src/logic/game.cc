@@ -128,7 +128,8 @@ Game::Game()
      cmdqueue_(*this),
      /** TRANSLATORS: Win condition for this game has not been set. */
      win_condition_displayname_(_("Not set")),
-     replay_(false) {
+     replay_(false),
+	 last_frozen_flag_check_(0) {
 }
 
 Game::~Game() {
@@ -560,6 +561,18 @@ void Game::think() {
 		// for scenarios and even worse for the regression suite (which relies on
 		// the timings of savings.
 		cmdqueue().run_queue(ctrl_->get_frametime(), get_gametime_pointer());
+
+		const int gametime = get_gametime();
+
+		if (gametime > last_frozen_flag_check_ + kTriggerPotentiallyFrozenFlagInterval) {
+			last_frozen_flag_check_ = gametime;
+			for (const Serial serial : objects().all_object_serials_ordered()) {
+				MapObject* object = objects().get_object(serial);
+				if (object->descr().type() == MapObjectType::FLAG) {
+					dynamic_cast<Flag*>(object)->unfreeze_wares(*this);
+				}
+			}
+		}
 
 		// check if autosave is needed
 		savehandler_.think(*this);
