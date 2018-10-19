@@ -52,7 +52,7 @@ constexpr int32_t kNotFoundAppropriate = -1;  // no ware appropiate for carrying
 constexpr int32_t kDenyDrop = -2;             // flag is full and no ware appropiate for swapping
 // TODO(GunChleoc): Dirty hack - sometimes flags have an idle ware with empty destination and a carrier twiddling his thumbs.
 // Bug was introduced in https://bazaar.launchpad.net/~widelands-dev/widelands/trunk/revision/8775
-constexpr int kTriggerPotentiallyFrozenFlagInterval = 561;
+constexpr int kTriggerPotentiallyFrozenFlagInterval = 60 * 561;
 
 /**
  * Flag represents a flag as you see it on the map.
