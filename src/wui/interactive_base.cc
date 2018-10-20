@@ -99,11 +99,11 @@ InteractiveBase::InteractiveBase(EditorGameBase& the_egbase, Section& global_s)
      toolbar_(this, 0, 0, UI::Box::Horizontal),
      quick_navigation_(&map_view_),
      egbase_(the_egbase),
-#ifndef NDEBUG  //  not in releases
+// NOCOM #ifndef NDEBUG  //  not in releases
      display_flags_(dfDebug),
-#else
-     display_flags_(0),
-#endif
+//#else
+//     display_flags_(0),
+//#endif
      lastframe_(SDL_GetTicks()),
      frametime_(0),
      avg_usframetime_(0),

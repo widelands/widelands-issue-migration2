@@ -35,6 +35,12 @@
 #include "logic/map_objects/tribes/worker.h"
 #include "logic/player.h"
 
+namespace {
+const Widelands::Coords test_coords(199, 199);
+const uint32_t test_coords_hash = test_coords.hash();
+
+} // namespace
+
 namespace Widelands {
 
 FlagDescr g_flag_descr("flag", "Flag");
@@ -54,7 +60,8 @@ Flag::Flag()
      ware_filled_(0),
      wares_(new PendingWare[ware_capacity_]),
      always_call_for_flag_(nullptr),
-	 last_update_(0) {
+	 last_update_(0),
+	 freeze_counter_(0) {
 	for (uint32_t i = 0; i < 6; ++i) {
 		roads_[i] = nullptr;
 	}
@@ -1002,16 +1009,45 @@ void Flag::log_general_info(const Widelands::EditorGameBase& egbase) const {
 }
 
 void Flag::unfreeze_wares(Game& game) {
+	const bool test = get_position().hash() == test_coords_hash;
+	if (test) {
+		log("NOCOM ************************************* \n");
+		for (int32_t i = 0; i < ware_filled_; ++i) {
+			log("Ware: %s\n", wares_[i].ware->descr().name().c_str());
+		}
+
+		for (const FlagJob& flag_job : flag_jobs_) {
+			const DescriptionIndex idx = flag_job.request->get_index();
+			const Coords& destination = flag_job.request->target_flag().get_position();
+			std::string wareworker_name("");
+			if (flag_job.request->get_type() == wwWARE) {
+				wareworker_name = game.tribes().get_ware_descr(idx)->name();
+			} else {
+				wareworker_name = game.tribes().get_worker_descr(idx)->name();
+			}
+			log("Flag Job: %s %s -> (%d, %d)\n", flag_job.program.c_str(), wareworker_name.c_str(), destination.x, destination.y);
+		}
+	}
+
 	const int gametime = game.get_gametime();
 	if (gametime > last_update_ + kTriggerPotentiallyFrozenFlagInterval) {
 		if (ware_filled_ > 0) {
-			log("Unfreezing flag for Player %d at (%d, %d) - %d wares\n", static_cast<unsigned int>(owner().player_number()), get_position().x, get_position().y, ware_filled_);
+			molog("%d: Potentially frozen flag for Player %d at (%d, %d) - %d wares\n", static_cast<int>(gametime / 1000), static_cast<unsigned int>(owner().player_number()), get_position().x, get_position().y, ware_filled_);
+			++freeze_counter_;
 		}
 		last_update_ = gametime;
-		for (int32_t i = 0; i < ware_filled_; ++i) {
-			init_ware(game, *wares_[i].ware, wares_[i]);
-			wares_[i].ware->update(game);
+	} else {
+		freeze_counter_ = 0;
+	}
+	if (freeze_counter_ > 2) {
+		if ( ware_filled_ > 0) {
+			log("%d: Unfreezing flag for Player %d at (%d, %d) - %d wares\n", static_cast<int>(gametime / 1000), static_cast<unsigned int>(owner().player_number()), get_position().x, get_position().y, ware_filled_);
+			for (int32_t i = 0; i < ware_filled_; ++i) {
+				init_ware(game, *wares_[i].ware, wares_[i]);
+				wares_[i].ware->update(game);
+			}
 		}
+		freeze_counter_ = 0;
 	}
 }
 }

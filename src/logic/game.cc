@@ -528,6 +528,10 @@ bool Game::run(UI::ProgressWindow* loader_ui,
 
 	g_sound_handler.change_music("ingame", 1000, 0);
 
+	iterate_players_existing(p, map().get_nrplayers(), *this, plr) {
+		plr->set_see_all(true);
+	}
+
 	state_ = gs_running;
 
 	get_ibase()->run<UI::Panel::Returncodes>();

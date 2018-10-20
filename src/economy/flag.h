@@ -209,7 +209,9 @@ private:
 	using FlagJobs = std::list<FlagJob>;
 	FlagJobs flag_jobs_;
 
+	// For forcing flag unfreeze to compensate for routing bug
 	int last_update_;
+	int freeze_counter_;
 };
 
 extern FlagDescr g_flag_descr;

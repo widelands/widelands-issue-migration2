@@ -310,6 +310,7 @@ void WareInstance::update(Game& game) {
 	// Update whether we have a Supply or not
 	if (!transfer_ || !transfer_->get_request()) {
 		if (!supply_) {
+			log("WareInstance::update - new IdleWareSupply\n");
 			supply_ = new IdleWareSupply(*this);
 		}
 	} else {
@@ -330,6 +331,7 @@ void WareInstance::update(Game& game) {
 		transfer_nextstep_ = nextstep;
 
 		if (!nextstep) {
+			log("WareInstance::update - create next step\n");
 			if (upcast(Flag, flag, location))
 				flag->call_carrier(game, *this, nullptr);
 
@@ -351,6 +353,7 @@ void WareInstance::update(Game& game) {
 		}
 
 		if (upcast(Flag, flag, location)) {
+			log("WareInstance::update - call_carrier\n");
 			flag->call_carrier(game, *this, dynamic_cast<Building const*>(nextstep) &&
 			                                      &nextstep->base_flag() != location ?
 			                                   &nextstep->base_flag() :
