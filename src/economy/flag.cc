@@ -48,6 +48,7 @@ FlagDescr g_flag_descr("flag", "Flag");
 const FlagDescr& Flag::descr() const {
 	return g_flag_descr;
 }
+// NOCOM https://bazaar.launchpad.net/~widelands-dev/widelands/trunk/revision/8775
 
 /**
  * A bare flag, used for testing only.
@@ -352,20 +353,39 @@ bool Flag::is_dead_end() const {
  * \return true/allow on low congestion-risk.
  */
 bool Flag::has_capacity_for_ware(WareInstance& ware) const {
+	bool test = false;
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM has_capacity_for_ware (%d, %d) %s - this\n", get_position().x, get_position().y, ware.descr().name().c_str());
+		test = true;
+	}
+	if (abs(get_position().x - test_coords.x) <= 1 && abs(get_position().y - test_coords.y) <= 1) {
+		log("NOCOM has_capacity_for_ware (%d, %d) %s - very near flag\n", get_position().x, get_position().y, ware.descr().name().c_str());
+		test = true;
+	}
+	/*else if (get_position().x == test_coords.x - 2 || get_position().x == test_coords.x + 2 || get_position().y == test_coords.y - 2 || get_position().y == test_coords.y + 2) {
+		log("NOCOM has_capacity_for_ware (%d, %d) %s - near flag\n", get_position().x, get_position().y, ware.descr().name().c_str());
+		test = true;
+	}
+	*/
+	// NOCOM check this
 	// avoid iteration for the easy cases
 	if (ware_filled_ < ware_capacity_ - 2) {
+		if (test) log("NOCOM ware_filled_ < ware_capacity_ - 2 true\n");
 		return true;  // more than two free slots, allow
 	}
 	if (ware_filled_ >= ware_capacity_) {
+		if (test) log("NOCOM ware_filled_ >= ware_capacity_ false\n");
 		return false;  // all slots filled, no room
 	}
 
 	DescriptionIndex const descr_index = ware.descr_index();
 	for (int i = 0; i < ware_filled_; ++i) {
 		if (wares_[i].ware->descr_index() == descr_index) {
+			if (test) log("NOCOM already there - false\n");
 			return false;  // ware of this type already present, leave room for other types
 		}
 	}
+	if (test) log("NOCOM end - true\n");
 	return true;  // ware of this type not present, allow
 }
 
@@ -374,6 +394,9 @@ bool Flag::has_capacity_for_ware(WareInstance& ware) const {
  * has_capacity_for_ware() also checks ware's type to prevent congestion.
  */
 bool Flag::has_capacity() const {
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM **** Flag::has_capacity (%d, %d)\n", get_position().x, get_position().y);
+	}
 	return (ware_filled_ < ware_capacity_);
 }
 
@@ -385,6 +408,9 @@ bool Flag::has_capacity() const {
  */
 void Flag::wait_for_capacity(Game& game, Worker& bob) {
 	last_update_ = game.get_gametime();
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM **** Flag::wait_for_capacity (%d, %d)\n", get_position().x, get_position().y);
+	}
 	capacity_wait_.push_back(&bob);
 }
 
@@ -393,6 +419,9 @@ void Flag::wait_for_capacity(Game& game, Worker& bob) {
  */
 void Flag::skip_wait_for_capacity(Game& game, Worker& w) {
 	last_update_ = game.get_gametime();
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM **** Flag::skip_wait_for_capacity (%d, %d)\n", get_position().x, get_position().y);
+	}
 	CapacityWaitQueue::iterator const it =
 	   std::find(capacity_wait_.begin(), capacity_wait_.end(), &w);
 	if (it != capacity_wait_.end())
@@ -405,6 +434,9 @@ void Flag::skip_wait_for_capacity(Game& game, Worker& w) {
  */
 void Flag::add_ware(EditorGameBase& egbase, WareInstance& ware) {
 	last_update_ = egbase.get_gametime();
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM **** Flag::add_ware (%d, %d)\n", get_position().x, get_position().y);
+	}
 	assert(ware_filled_ < ware_capacity_);
 	init_ware(egbase, ware, wares_[ware_filled_++]);
 	if (upcast(Game, game, &egbase)) {
@@ -417,6 +449,9 @@ void Flag::add_ware(EditorGameBase& egbase, WareInstance& ware) {
  */
 void Flag::init_ware(EditorGameBase& egbase, WareInstance& ware, PendingWare& pi) {
 	last_update_ = egbase.get_gametime();
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM **** Flag::init_ware (%d, %d)\n", get_position().x, get_position().y);
+	}
 	pi.ware = &ware;
 	pi.pending = true;
 	pi.nextstep = nullptr;
@@ -447,14 +482,34 @@ void Flag::init_ware(EditorGameBase& egbase, WareInstance& ware, PendingWare& pi
  * for a  building destination.
 */
 Flag::PendingWare* Flag::get_ware_for_flag(Flag& destflag, bool const pending_only) {
+	bool test = false;
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM get_ware_for_flag (%d, %d) -> (%d, %d) - this\n", get_position().x, get_position().y, destflag.get_position().x, destflag.get_position().y);
+		test = true;
+	}
+	if (destflag.get_position().hash() == test_coords_hash) {
+		log("NOCOM get_ware_for_flag (%d, %d) -> (%d, %d) - other\n", destflag.get_position().x, destflag.get_position().y, get_position().x, get_position().y);
+		test = true;
+	}
+	// NOCOM test this
+	if (test) log("NOCOM ware_filled_: %d\n", ware_filled_);
 	for (int32_t i = 0; i < ware_filled_; ++i) {
 		PendingWare* pw = &wares_[i];
+		if (test) {
+			log("NOCOM testing ware: %s\n", pw->ware->descr().name().c_str());
+			log("NOCOM !pending_only ? %s\n", !pending_only ? "true" : "false");
+			log("NOCOM pw->pending ? %s\n", pw->pending ? "true" : "false");
+			log("NOCOM pw->nextstep == &destflag ? %s\n", pw->nextstep == &destflag ? "true" : "false");
+			log("NOCOM destflag.allow_ware_from_flag(*pw->ware, *this) ? %s\n", destflag.allow_ware_from_flag(*pw->ware, *this) ? "true" : "false");
+		}
 		if ((!pending_only || pw->pending) && pw->nextstep == &destflag &&
 		    destflag.allow_ware_from_flag(*pw->ware, *this)) {
+			if (test) log("NOCOM found ware: %s\n", pw->ware->descr().name().c_str());
 			return pw;
 		}
 	}
 
+	if (test) log("NOCOM no ware found\n");
 	return nullptr;
 }
 
@@ -472,6 +527,13 @@ Flag::PendingWare* Flag::get_ware_for_flag(Flag& destflag, bool const pending_on
  */
 bool Flag::cancel_pickup(Game& game, Flag& destflag) {
 	last_update_ = game.get_gametime();
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM cancel_pickup - this\n");
+	}
+	if (destflag.get_position().hash() == test_coords_hash) {
+		log("NOCOM cancel_pickup - other\n");
+	}
+	// NOCOM test this
 	for (int32_t i = 0; i < ware_filled_; ++i) {
 		PendingWare& pw = wares_[i];
 		if (!pw.pending && pw.nextstep == &destflag) {
@@ -491,6 +553,10 @@ bool Flag::cancel_pickup(Game& game, Flag& destflag) {
  * or kNotFoundAppropriate (carrier will leave empty-handed)
  */
 int32_t Flag::find_pending_ware(PlayerImmovable& dest) {
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM find_pending_ware - this\n");
+	}
+	// NOCOM test this
 	int32_t highest_pri = -1;
 	int32_t best_index = kNotFoundAppropriate;
 	bool ware_pended = false;
@@ -513,7 +579,7 @@ int32_t Flag::find_pending_ware(PlayerImmovable& dest) {
 		if (&dest != building_ && !dynamic_cast<Flag&>(dest).allow_ware_from_flag(*pw.ware, *this)) {
 			continue;
 		}
-
+// NOCOM we have a priority here - give it a timer too?
 		if (pw.priority > highest_pri) {
 			highest_pri = pw.priority;
 			best_index = i;
@@ -528,6 +594,13 @@ int32_t Flag::find_pending_ware(PlayerImmovable& dest) {
  * \return same as find_pending_ware() above, plus kDenyDrop (carrier will wait)
  */
 int32_t Flag::find_swappable_ware(WareInstance& ware, Flag& destflag) {
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM find_swappable_ware - this\n");
+	}
+	if (destflag.get_position().hash() == test_coords_hash) {
+		log("NOCOM find_swappable_ware - other\n");
+	}
+	// NOCOM test this
 	DescriptionIndex const descr_index = ware.descr_index();
 	int32_t highest_pri = -1;
 	int32_t best_index = kNotFoundAppropriate;
@@ -584,6 +657,11 @@ int32_t Flag::find_swappable_ware(WareInstance& ware, Flag& destflag) {
  * Called by carrier code to retrieve a ware found by the previous methods.
  */
 WareInstance* Flag::fetch_pending_ware(Game& game, int32_t best_index) {
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM fetch_pending_ware - this\n");
+	}
+
+	// NOCOM test this
 	if (best_index < 0) {
 		return nullptr;
 	}
@@ -605,6 +683,10 @@ WareInstance* Flag::fetch_pending_ware(Game& game, int32_t best_index) {
  */
 void Flag::ware_departing(Game& game) {
 	last_update_ = game.get_gametime();
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM ware_departing - this\n");
+	}
+	// NOCOM test this
 	// Wake up one sleeper from the capacity queue.
 	while (!capacity_wait_.empty()) {
 		Worker* const w = capacity_wait_.front().get(game);
@@ -665,6 +747,9 @@ void Flag::propagate_promoted_road(Road* const promoted_road) {
  * Count only those wares which are awaiting to be carried along the same road.
  */
 uint8_t Flag::count_wares_in_queue(PlayerImmovable& dest) const {
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM **** Flag::count_wares_in_queue (%d, %d)\n", get_position().x, get_position().y);
+	}
 	uint8_t n = 0;
 	for (int32_t i = 0; i < ware_filled_; ++i) {
 		if (wares_[i].nextstep == &dest) {
@@ -679,6 +764,9 @@ uint8_t Flag::count_wares_in_queue(PlayerImmovable& dest) const {
  * Do not rely the result value to stay valid and do not change them.
  */
 Flag::Wares Flag::get_wares() {
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM **** Flag::get_wares (%d, %d)\n", get_position().x, get_position().y);
+	}
 	Wares rv;
 
 	for (int32_t i = 0; i < ware_filled_; ++i) {
@@ -694,6 +782,9 @@ Flag::Wares Flag::get_wares() {
  */
 void Flag::remove_ware(EditorGameBase& egbase, WareInstance* const ware) {
 	last_update_ = egbase.get_gametime();
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM **** Flag::remove_ware (%d, %d)\n", get_position().x, get_position().y);
+	}
 	for (int32_t i = 0; i < ware_filled_; ++i) {
 		if (wares_[i].ware != ware) {
 			continue;
@@ -728,6 +819,9 @@ void Flag::remove_ware(EditorGameBase& egbase, WareInstance* const ware) {
  */
 void Flag::call_carrier(Game& game, WareInstance& ware, PlayerImmovable* const nextstep) {
 	last_update_ = game.get_gametime();
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM call_carrier - this\n");
+	}
 	PendingWare* pi = nullptr;
 	int32_t i = 0;
 
@@ -779,6 +873,7 @@ void Flag::call_carrier(Game& game, WareInstance& ware, PlayerImmovable* const n
 			continue;
 		}
 
+		// NOCOM test this
 		Flag* other = &road->get_flag(Road::FlagEnd);
 		if (other == this) {
 			other = &road->get_flag(Road::FlagStart);
@@ -788,6 +883,7 @@ void Flag::call_carrier(Game& game, WareInstance& ware, PlayerImmovable* const n
 		}
 
 		// Yes, this is the road we want; inform it
+		// NOCOM test this
 		if (other->update_ware_from_flag(game, wares_[i], *road, *this)) {
 			return;
 		}
@@ -807,6 +903,13 @@ void Flag::call_carrier(Game& game, WareInstance& ware, PlayerImmovable* const n
  * \return true/allow on low congestion-risk.
  */
 bool Flag::allow_ware_from_flag(WareInstance& ware, Flag& flag) {
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM allow_ware_from_flag - this\n");
+	}
+	if (flag.get_position().hash() == test_coords_hash) {
+		log("NOCOM allow_ware_from_flag - other\n");
+	}
+	// NOCOM test this
 	// avoid iteration for the easy cases
 	if (ware_filled_ < ware_capacity_ - 2) {
 		return true;
@@ -834,6 +937,13 @@ bool Flag::allow_ware_from_flag(WareInstance& ware, Flag& flag) {
  */
 bool Flag::update_ware_from_flag(Game& game, PendingWare& pw1, Road& road, Flag& flag) {
 	last_update_ = game.get_gametime();
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM update_ware_from_flag - this\n");
+	}
+	if (flag.get_position().hash() == test_coords_hash) {
+		log("NOCOM update_ware_from_flag - other\n");
+	}
+	// NOCOM test this
 	WareInstance& w1 = *pw1.ware;
 	DescriptionIndex const w1_descr_index = w1.descr_index();
 	bool has_same_ware = false;
@@ -880,6 +990,9 @@ bool Flag::update_ware_from_flag(Game& game, PendingWare& pw1, Road& road, Flag&
  */
 void Flag::update_wares(Game& game, Flag* const other) {
 	last_update_ = game.get_gametime();
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM **** Flag::update_wares (%d, %d)\n", get_position().x, get_position().y);
+	}
 	always_call_for_flag_ = other;
 
 	for (int32_t i = 0; i < ware_filled_; ++i) {
@@ -957,6 +1070,9 @@ void Flag::destroy(EditorGameBase& egbase) {
  * and to execute the given program once it's completed.
  */
 void Flag::add_flag_job(Game&, DescriptionIndex const workerware, const std::string& programname) {
+	if (get_position().hash() == test_coords_hash) {
+		log("NOCOM **** Flag::add_flag_job (%d, %d)\n", get_position().x, get_position().y);
+	}
 	FlagJob j;
 
 	j.request = new Request(*this, workerware, Flag::flag_job_request_callback, wwWORKER);
@@ -972,6 +1088,9 @@ void Flag::add_flag_job(Game&, DescriptionIndex const workerware, const std::str
 void Flag::flag_job_request_callback(
    Game& game, Request& rq, DescriptionIndex, Worker* const w, PlayerImmovable& target) {
 	Flag& flag = dynamic_cast<Flag&>(target);
+	if (flag.get_position().hash() == test_coords_hash) {
+		log("NOCOM **** Flag::flag_job_request_callback (%d, %d)\n", flag.get_position().x, flag.get_position().y);
+	}
 
 	assert(w);
 
