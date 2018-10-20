@@ -48,6 +48,16 @@
 #include "map_io/map_object_saver.h"
 #include "wui/mapviewpixelconstants.h"
 
+namespace {
+const Widelands::Coords test_coords(51, 111);
+const uint32_t test_coords_hash = test_coords.hash();
+
+bool log_wanted(Widelands::Bob* carrier) {
+	return (carrier->descr().type() == Widelands::MapObjectType::CARRIER && abs(carrier->get_position().x - test_coords.x) <= 1 && abs(carrier->get_position().y - test_coords.y) <= 1);
+}
+
+} // namespace
+
 namespace Widelands {
 
 BobDescr::BobDescr(const std::string& init_descname,
@@ -189,6 +199,8 @@ void Bob::do_act(Game& game) {
 	in_act_ = true;
 
 	const Task& task = *top_state().task;
+
+	if (log_wanted(this)) log("NOCOM ************** Bob::do_act %s (%d, %d)\n", task.name, get_position().x, get_position().y);
 
 	(this->*task.update)(game, top_state());
 
@@ -1021,6 +1033,10 @@ void Bob::Loader::load(FileRead& fr) {
 				loadstate.objvar1 = fr.unsigned_32();
 				state.svar1 = fr.c_string();
 				state.coords = read_coords_32_allow_null(&fr, egbase().map().extent());
+
+				if (log_wanted(&bob)) {
+					log("NOCOM ########################### loading state vars %d %d %d %d %s (%d, %d)\n", state.ivar1, state.ivar2, state.ivar3, loadstate.objvar1, state.svar1.c_str(), state.coords.x, state.coords.y);
+				}
 
 				if (fr.unsigned_8()) {
 					uint32_t anims[6];

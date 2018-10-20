@@ -550,6 +550,7 @@ bool Game::run(UI::ProgressWindow* loader_ui,
  * running the cmd queue etc.
  */
 void Game::think() {
+	//log("NOCOM ********************* game think\n");
 	assert(ctrl_);
 
 	ctrl_->think();

@@ -39,6 +39,12 @@
 #include "map_io/map_object_loader.h"
 #include "map_io/map_object_saver.h"
 
+namespace {
+const Widelands::Coords test_coords(52, 111);
+const uint32_t test_coords_hash = test_coords.hash();
+
+} // namespace
+
 namespace Widelands {
 
 /**
@@ -330,8 +336,12 @@ void WareInstance::update(Game& game) {
 		transfer_nextstep_ = nextstep;
 
 		if (!nextstep) {
-			if (upcast(Flag, flag, location))
+			if (upcast(Flag, flag, location)) {
 				flag->call_carrier(game, *this, nullptr);
+				if (flag->get_position().hash() == test_coords_hash) {
+					log("NOCOM WareInstance::update 1\n");
+				}
+			}
 
 			Transfer* const t = transfer_;
 
@@ -351,6 +361,9 @@ void WareInstance::update(Game& game) {
 		}
 
 		if (upcast(Flag, flag, location)) {
+			if (flag->get_position().hash() == test_coords_hash) {
+				log("NOCOM WareInstance::update 2\n");
+			}
 			flag->call_carrier(game, *this, dynamic_cast<Building const*>(nextstep) &&
 			                                      &nextstep->base_flag() != location ?
 			                                   &nextstep->base_flag() :

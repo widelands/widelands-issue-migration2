@@ -33,6 +33,16 @@
 #include "logic/game_data_error.h"
 #include "logic/player.h"
 
+namespace {
+const Widelands::Coords test_coords(51, 111);
+const uint32_t test_coords_hash = test_coords.hash();
+
+bool log_wanted(Widelands::Carrier* carrier) {
+	return (abs(carrier->get_position().x - test_coords.x) <= 2 && abs(carrier->get_position().y - test_coords.y) <= 2);
+}
+
+} // namespace
+
 namespace Widelands {
 
 /**
@@ -47,6 +57,7 @@ Bob::Task const Carrier::taskRoad = {"road", static_cast<Bob::Ptr>(&Carrier::roa
  * Work on the given road, assume the location is correct.
  */
 void Carrier::start_task_road(Game& game) {
+	if (log_wanted(this)) log("NOCOM Carrier::start_task_road (%d, %d)\n", get_position().x, get_position().y);
 	push_task(game, taskRoad);
 
 	top_state().ivar1 = 0;
@@ -58,10 +69,12 @@ void Carrier::start_task_road(Game& game) {
  * Called by Road code when the road is split.
 */
 void Carrier::update_task_road(Game& game) {
+	if (log_wanted(this)) log("NOCOM ************** Carrier::update_task_road (%d, %d)\n", get_position().x, get_position().y);
 	send_signal(game, "road");
 }
 
 void Carrier::road_update(Game& game, State& state) {
+	if (log_wanted(this)) log("NOCOM ************** Carrier::road_update (%d, %d)\n", get_position().x, get_position().y);
 	std::string signal = get_signal();
 
 	if (signal == "road" || signal == "ware") {
@@ -79,6 +92,7 @@ void Carrier::road_update(Game& game, State& state) {
 	}
 
 	if (operation_ == INIT) {
+		// NOCOM test this
 		operation_ = find_source_flag(game);
 	}
 
@@ -119,6 +133,7 @@ void Carrier::road_update(Game& game, State& state) {
  * a ware there, we have to make sure that they do not count on us anymore.
  */
 void Carrier::road_pop(Game& game, State& /* state */) {
+	if (log_wanted(this)) log("NOCOM ************** Carrier::road_pop (%d, %d)\n", get_position().x, get_position().y);
 	if (operation_ > NO_OPERATION && get_location(game)) {
 		Road& road = dynamic_cast<Road&>(*get_location(game));
 		Flag& flag = road.get_flag(static_cast<Road::FlagId>(operation_));
@@ -141,11 +156,13 @@ Bob::Task const Carrier::taskTransport = {
  * Begin the transport task.
  */
 void Carrier::start_task_transport(Game& game, int32_t const fromflag) {
+	if (log_wanted(this)) log("NOCOM ************** Carrier::start_task_transport (%d, %d)\n", get_position().x, get_position().y);
 	push_task(game, taskTransport);
 	top_state().ivar1 = fromflag;
 }
 
 void Carrier::transport_update(Game& game, State& state) {
+	if (log_wanted(this)) log("NOCOM ************** Carrier::transport_update (%d, %d)\n", get_position().x, get_position().y);
 	std::string signal = get_signal();
 
 	if (signal == "road") {
@@ -160,6 +177,7 @@ void Carrier::transport_update(Game& game, State& state) {
 		return pop_task(game);
 	}
 
+	// NOCOM test this
 	int32_t const ivar1 = state.ivar1;
 	if (ivar1 == -1) {
 		// If we're "in" the target building, special code applies
@@ -300,6 +318,11 @@ void Carrier::deliver_to_building(Game& game, State& state) {
  */
 bool Carrier::notify_ware(Game& game, int32_t const flag) {
 	State& state = top_state();
+	if (log_wanted(this)) {
+		log("NOCOM ************** Carrier::notify_ware (%d, %d)\n", get_position().x, get_position().y);
+		log("NOCOM ########################### loading state vars %d %d %d %d %s (%d, %d)\n", state.ivar1, state.ivar2, state.ivar3, state.objvar1.serial(), state.svar1.c_str(), state.coords.x, state.coords.y);
+	}
+	// NOCOM test this
 
 	if (operation_ == WAIT) {
 		if (state.objvar1.get(game) ==
@@ -323,6 +346,8 @@ bool Carrier::notify_ware(Game& game, int32_t const flag) {
  * \return the flag it is on.
  */
 int32_t Carrier::find_source_flag(Game& game) {
+	if (log_wanted(this)) log("NOCOM ************** Carrier::find_source_flag (%d, %d)\n", get_position().x, get_position().y);
+	// NOCOM test this
 	assert(operation_ == INIT);
 
 	Road& road = dynamic_cast<Road&>(*get_location(game));
@@ -346,6 +371,7 @@ int32_t Carrier::find_source_flag(Game& game) {
  * Find the flag we are closest to (in walking time).
  */
 int32_t Carrier::find_closest_flag(Game& game) {
+	if (log_wanted(this)) log("NOCOM ************** Carrier::find_closest_flag (%d, %d)\n", get_position().x, get_position().y);
 	const Map& map = game.map();
 	CoordPath startpath(map, dynamic_cast<Road&>(*get_location(game)).get_path());
 
@@ -390,6 +416,7 @@ int32_t Carrier::find_closest_flag(Game& game) {
  * the target field.
  */
 bool Carrier::start_task_walktoflag(Game& game, int32_t const flag, bool const offset) {
+	if (log_wanted(this)) log("NOCOM ************** Carrier::start_task_walktoflag (%d, %d)\n", get_position().x, get_position().y);
 	const Path& path = dynamic_cast<Road&>(*get_location(game)).get_path();
 	int32_t idx;
 
@@ -407,11 +434,15 @@ bool Carrier::start_task_walktoflag(Game& game, int32_t const flag, bool const o
 }
 
 void Carrier::log_general_info(const Widelands::EditorGameBase& egbase) const {
+	bool test = get_position().hash() == test_coords_hash;
+	if (test) {
+		log("NOCOM ********************************************\n");
 	molog("Carrier at %i,%i\n", get_position().x, get_position().y);
 
 	Worker::log_general_info(egbase);
 
 	molog("operation = %i\n", operation_);
+	}
 }
 
 /*
@@ -434,6 +465,8 @@ void Carrier::Loader::load(FileRead& fr) {
 		if (packet_version == kCurrentPacketVersion) {
 			Carrier& carrier = get<Carrier>();
 			carrier.operation_ = fr.signed_32();
+			bool test = carrier.get_position().hash() == test_coords_hash;
+			if (test) log("NOCOM ************** loader carrier operation %d\n",  carrier.operation_);
 		} else {
 			throw UnhandledVersionError("Carrier", packet_version, kCurrentPacketVersion);
 		}
@@ -443,6 +476,8 @@ void Carrier::Loader::load(FileRead& fr) {
 }
 
 const Bob::Task* Carrier::Loader::get_task(const std::string& name) {
+	bool test = dynamic_cast<Bob*>(object_)->get_position().hash() == test_coords_hash;
+	if (test) log("NOCOM ************** loader carrier task %s\n",  name.c_str());
 	if (name == "road")
 		return &taskRoad;
 	if (name == "transport")

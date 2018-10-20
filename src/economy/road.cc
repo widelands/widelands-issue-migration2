@@ -35,6 +35,15 @@ namespace Widelands {
 // dummy instance because MapObject needs a description
 namespace {
 const RoadDescr g_road_descr("road", "Road");
+
+namespace {
+const Widelands::Coords test_coords(51, 111);
+const uint32_t test_coords_hash = test_coords.hash();
+bool log_wanted(Flag* flag) {
+	return (abs(flag->get_position().x - test_coords.x) <= 2 && abs(flag->get_position().y - test_coords.y) <= 2);
+}
+
+} // namespace
 }
 
 const RoadDescr& Road::descr() const {
@@ -543,6 +552,8 @@ void Road::postsplit(Game& game, Flag& flag) {
  * \return true if a carrier has been sent on its way, false otherwise.
  */
 bool Road::notify_ware(Game& game, Flag& flag) {
+	if (log_wanted(&flag)) log("NOCOM ============================ Road::notify_ware (%d, %d)\n", flag.get_position().x, flag.get_position().y);
+	// NOCOM test this
 	FlagId flagid = &flag == flags_[Road::FlagEnd] ? Road::FlagEnd : Road::FlagStart;
 	// Iterate over all carriers and try to find one which will take the ware
 	for (CarrierSlot& slot : carrier_slots_) {

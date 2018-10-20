@@ -66,6 +66,16 @@
 #include "map_io/tribes_legacy_lookup_table.h"
 #include "sound/note_sound.h"
 
+namespace {
+const Widelands::Coords test_coords(51, 111);
+const uint32_t test_coords_hash = test_coords.hash();
+
+bool log_wanted(Widelands::Bob* carrier) {
+	return (carrier->descr().type() == Widelands::MapObjectType::CARRIER && abs(carrier->get_position().x - test_coords.x) <= 1 && abs(carrier->get_position().y - test_coords.y) <= 1);
+}
+
+} // namespace
+
 namespace Widelands {
 
 /**
@@ -723,6 +733,7 @@ bool Worker::run_animate(Game& game, State& state, const Action& action) {
  * iparam1 = 0: don't drop ware on flag, 1: do drop ware on flag
  */
 bool Worker::run_return(Game& game, State& state, const Action& action) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::run_return (%d, %d)\n", get_position().x, get_position().y);
 	++state.ivar1;
 	start_task_return(game, action.iparam1);
 	return true;
@@ -1093,6 +1104,7 @@ void Worker::log_general_info(const EditorGameBase& egbase) const {
  * \li current location is destroyed (building burnt down etc...)
  */
 void Worker::set_location(PlayerImmovable* const location) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::set_location (%d, %d)\n", get_position().x, get_position().y);
 	assert(!location || ObjectPointer(location).get(owner().egbase()));
 
 	PlayerImmovable* const old_location = get_location(owner().egbase());
@@ -1140,6 +1152,7 @@ void Worker::set_location(PlayerImmovable* const location) {
  * \li by the current location, when the location's economy changes
  */
 void Worker::set_economy(Economy* const economy) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::set_economy (%d, %d)\n", get_position().x, get_position().y);
 	if (economy == economy_)
 		return;
 
@@ -1209,6 +1222,7 @@ void Worker::cleanup(EditorGameBase& egbase) {
  * fetch_carried_ware()).
  */
 void Worker::set_carried_ware(EditorGameBase& egbase, WareInstance* const ware) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::set_carried_ware (%d, %d)\n", get_position().x, get_position().y);
 	if (WareInstance* const oldware = get_carried_ware(egbase)) {
 		oldware->cleanup(egbase);
 		delete oldware;
@@ -1224,6 +1238,7 @@ void Worker::set_carried_ware(EditorGameBase& egbase, WareInstance* const ware) 
  * Stop carrying the current ware, and return a pointer to it.
  */
 WareInstance* Worker::fetch_carried_ware(EditorGameBase& game) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::fetch_carried_ware (%d, %d)\n", get_position().x, get_position().y);
 	WareInstance* const ware = get_carried_ware(game);
 
 	if (ware) {
@@ -1315,6 +1330,7 @@ DescriptionIndex Worker::level(Game& game) {
  * Set a fallback task.
  */
 void Worker::init_auto_task(Game& game) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::init_auto_task (%d, %d)\n", get_position().x, get_position().y);
 	if (PlayerImmovable* location = get_location(game)) {
 		if (get_economy()->warehouses().size() || location->descr().type() >= MapObjectType::BUILDING)
 			return start_task_gowarehouse(game);
@@ -1340,6 +1356,7 @@ const Bob::Task Worker::taskTransfer = {"transfer", static_cast<Bob::Ptr>(&Worke
  * Tell the worker to follow the Transfer
  */
 void Worker::start_task_transfer(Game& game, Transfer* t) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::start_task_transfer (%d, %d)\n", get_position().x, get_position().y);
 	// Hackish override for receiving transfers during gowarehouse,
 	// and to correctly handle the stack during loading of games
 	// (in that case, the transfer task already exists on the stack
@@ -1356,6 +1373,7 @@ void Worker::start_task_transfer(Game& game, Transfer* t) {
 }
 
 void Worker::transfer_pop(Game& /* game */, State& /* state */) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::transfer_pop (%d, %d)\n", get_position().x, get_position().y);
 	if (transfer_) {
 		transfer_->has_failed();
 		transfer_ = nullptr;
@@ -1363,6 +1381,7 @@ void Worker::transfer_pop(Game& /* game */, State& /* state */) {
 }
 
 void Worker::transfer_update(Game& game, State& /* state */) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::transfer_update (%d, %d)\n", get_position().x, get_position().y);
 	const Map& map = game.map();
 	PlayerImmovable* location = get_location(game);
 
@@ -1526,6 +1545,7 @@ void Worker::transfer_update(Game& game, State& /* state */) {
  * Called by transport code when the transfer has been cancelled & destroyed.
  */
 void Worker::cancel_task_transfer(Game& game) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::cancel_task_transfer (%d, %d)\n", get_position().x, get_position().y);
 	transfer_ = nullptr;
 	send_signal(game, "cancel");
 }
@@ -1545,6 +1565,7 @@ const Bob::Task Worker::taskShipping = {"shipping", static_cast<Bob::Ptr>(&Worke
  * ivar1 = end shipping?
  */
 void Worker::start_task_shipping(Game& game, PortDock* pd) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::start_task_shipping (%d, %d)\n", get_position().x, get_position().y);
 	push_task(game, taskShipping);
 	top_state().ivar1 = 0;
 	if (pd)
@@ -1557,6 +1578,7 @@ void Worker::start_task_shipping(Game& game, PortDock* pd) {
  * @note the worker must be in a @ref Warehouse location
  */
 void Worker::end_shipping(Game& game) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::end_shipping (%d, %d)\n", get_position().x, get_position().y);
 	if (State* state = get_state(taskShipping)) {
 		state->ivar1 = 1;
 		send_signal(game, "endshipping");
@@ -1567,10 +1589,12 @@ void Worker::end_shipping(Game& game) {
  * Whether we are currently being handled by the shipping code.
  */
 bool Worker::is_shipping() {
+	if (log_wanted(this)) log("NOCOM ************** Worker::is_shipping (%d, %d)\n", get_position().x, get_position().y);
 	return get_state(taskShipping);
 }
 
 void Worker::shipping_pop(Game& game, State& /* state */) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::shipping_pop (%d, %d)\n", get_position().x, get_position().y);
 	// Defense against unorderly cleanup via reset_tasks
 	if (!get_location(game)) {
 		set_economy(nullptr);
@@ -1578,6 +1602,7 @@ void Worker::shipping_pop(Game& game, State& /* state */) {
 }
 
 void Worker::shipping_update(Game& game, State& state) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::shipping_update (%d, %d)\n", get_position().x, get_position().y);
 	PlayerImmovable* location = get_location(game);
 
 	// Signal handling
@@ -1780,6 +1805,7 @@ const Bob::Task Worker::taskReturn = {
  * Return to our owning building.
  */
 void Worker::start_task_return(Game& game, bool const dropware) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::start_task_return (%d, %d)\n", get_position().x, get_position().y);
 	PlayerImmovable* const location = get_location(game);
 
 	if (!location || location->descr().type() < MapObjectType::BUILDING)
@@ -1790,6 +1816,7 @@ void Worker::start_task_return(Game& game, bool const dropware) {
 }
 
 void Worker::return_update(Game& game, State& state) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::return_update (%d, %d)\n", get_position().x, get_position().y);
 	std::string signal = get_signal();
 
 	if (signal == "location") {
@@ -1819,6 +1846,7 @@ void Worker::return_update(Game& game, State& state) {
 		if (upcast(Flag, flag, pos)) {
 			// Is this "our" flag?
 			if (flag->get_building() == location) {
+				// NOCOM test this
 				WareInstance* const ware = get_carried_ware(game);
 				if (state.ivar1 && ware && flag->has_capacity_for_ware(*ware)) {
 					flag->add_ware(game, *fetch_carried_ware(game));
@@ -2038,6 +2066,8 @@ void Worker::start_task_dropoff(Game& game, WareInstance& ware) {
 }
 
 void Worker::dropoff_update(Game& game, State&) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::dropoff_update (%d, %d)\n", get_position().x, get_position().y);
+	// NOCOM test this
 	std::string signal = get_signal();
 
 	if (signal.size()) {
@@ -2122,11 +2152,13 @@ const Bob::Task Worker::taskFetchfromflag = {
  * the building, and walk back inside.
  */
 void Worker::start_task_fetchfromflag(Game& game) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::start_task_fetchfromflag (%d, %d)\n", get_position().x, get_position().y);
 	push_task(game, taskFetchfromflag);
 	top_state().ivar1 = 0;
 }
 
 void Worker::fetchfromflag_update(Game& game, State& state) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::fetchfromflag_update (%d, %d)\n", get_position().x, get_position().y);
 	PlayerImmovable& employer = *get_location(game);
 	PlayerImmovable* const location =
 	   dynamic_cast<PlayerImmovable*>(game.map().get_immovable(get_position()));
@@ -2218,6 +2250,7 @@ const Bob::Task Worker::taskWaitforcapacity = {
  * adds the worker to the flag's wait queue.
  */
 void Worker::start_task_waitforcapacity(Game& game, Flag& flag) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::start_task_waitforcapacity (%d, %d)\n", get_position().x, get_position().y);
 	push_task(game, taskWaitforcapacity);
 
 	top_state().objvar1 = &flag;
@@ -2226,6 +2259,7 @@ void Worker::start_task_waitforcapacity(Game& game, Flag& flag) {
 }
 
 void Worker::waitforcapacity_update(Game& game, State&) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::waitforcapacity_update (%d, %d)\n", get_position().x, get_position().y);
 	std::string signal = get_signal();
 
 	if (signal.size()) {
@@ -2238,6 +2272,7 @@ void Worker::waitforcapacity_update(Game& game, State&) {
 }
 
 void Worker::waitforcapacity_pop(Game& game, State& state) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::waitforcapacity_pop (%d, %d)\n", get_position().x, get_position().y);
 	if (upcast(Flag, flag, state.objvar1.get(game)))
 		flag->skip_wait_for_capacity(game, *this);
 }
@@ -2247,6 +2282,7 @@ void Worker::waitforcapacity_pop(Game& game, State& state) {
  * Return true if we actually woke up due to this.
  */
 bool Worker::wakeup_flag_capacity(Game& game, Flag& flag) {
+	if (log_wanted(this)) log("NOCOM ************** Worker::wakeup_flag_capacity (%d, %d)\n", get_position().x, get_position().y);
 	if (State const* const state = get_state())
 		if (state->task == &taskWaitforcapacity) {
 			molog("[waitforcapacity]: Wake up: flag capacity.\n");
