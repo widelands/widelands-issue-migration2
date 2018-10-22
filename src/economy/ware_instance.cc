@@ -299,8 +299,21 @@ void WareInstance::update(Game& game) {
 
 	MapObject* const loc = location_.get(game);
 
+	bool test = false;
+	if (upcast(PlayerImmovable, location, loc)) {
+		if (upcast(Flag, flag, location)) {
+			if (flag->get_position().hash() == test_coords_hash) {
+				test = true;
+			}
+		}
+	}
+
+	if (test) log("NOCOM ===============================================\n");
+	if (test) log("NOCOM ===============================================\n");
+
 	// Reset our state if we're not on location or outside an economy
 	if (!get_economy()) {
+		if (test) log("NOCOM WareInstance::update no economy\n");
 		cancel_moving();
 		return;
 	}
@@ -315,20 +328,24 @@ void WareInstance::update(Game& game) {
 
 	// Update whether we have a Supply or not
 	if (!transfer_ || !transfer_->get_request()) {
+		if (test) log("NOCOM WareInstance::update !transfer_ || !transfer_->get_request()\n");
 		if (!supply_) {
-			log("WareInstance::update - new IdleWareSupply\n");
+			if (test) log("WareInstance::update - new IdleWareSupply\n");
 			supply_ = new IdleWareSupply(*this);
 		}
 	} else {
+		if (test) log("NOCOM WareInstance::update delete supply\n");
 		delete supply_;
 		supply_ = nullptr;
 	}
 
 	// Deal with transfers
 	if (transfer_) {
+		if (test) log("NOCOM WareInstance::update transfer_\n");
 		upcast(PlayerImmovable, location, loc);
 
 		if (!location) {
+			if (test) log("NOCOM WareInstance::update !location\n");
 			return;  // wait
 		}
 
@@ -337,11 +354,10 @@ void WareInstance::update(Game& game) {
 		transfer_nextstep_ = nextstep;
 
 		if (!nextstep) {
+			if (test) log("NOCOM WareInstance::update !nextstep\n");
 			if (upcast(Flag, flag, location)) {
+				if (test) log("NOCOM WareInstance::update call_carrier\n");
 				flag->call_carrier(game, *this, nullptr);
-				if (flag->get_position().hash() == test_coords_hash) {
-					log("NOCOM WareInstance::update 1\n");
-				}
 			}
 
 			Transfer* const t = transfer_;
@@ -350,9 +366,11 @@ void WareInstance::update(Game& game) {
 			transfer_nextstep_ = nullptr;
 
 			if (success) {
+				if (test) log("NOCOM WareInstance::update t->has_finished()\n");
 				t->has_finished();
 				return;
 			} else {
+				if (test) log("NOCOM WareInstance::update t->has_failed()\n");
 				t->has_failed();
 
 				cancel_moving();
@@ -362,14 +380,13 @@ void WareInstance::update(Game& game) {
 		}
 
 		if (upcast(Flag, flag, location)) {
-			if (flag->get_position().hash() == test_coords_hash) {
-				log("NOCOM WareInstance::update 2\n");
-			}
+			if (test) log("NOCOM WareInstance::update call_carrier 2\n");
 			flag->call_carrier(game, *this, dynamic_cast<Building const*>(nextstep) &&
 			                                      &nextstep->base_flag() != location ?
 			                                   &nextstep->base_flag() :
 			                                   nextstep);
 		} else if (upcast(PortDock, pd, location)) {
+			if (test) log("NOCOM WareInstance::update update_shippingitem\n");
 			pd->update_shippingitem(game, *this);
 		} else {
 			throw wexception(

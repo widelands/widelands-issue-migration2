@@ -38,7 +38,7 @@ const Widelands::Coords test_coords(198, 199);
 const uint32_t test_coords_hash = test_coords.hash();
 
 bool log_wanted(Widelands::Carrier* carrier) {
-	return (abs(carrier->get_position().x - test_coords.x) <= 2 && abs(carrier->get_position().y - test_coords.y) <= 2);
+	return (abs(carrier->get_position().x - test_coords.x) <= 1 && abs(carrier->get_position().y - test_coords.y) <= 0);
 }
 
 } // namespace
@@ -78,21 +78,26 @@ void Carrier::road_update(Game& game, State& state) {
 	std::string signal = get_signal();
 
 	if (signal == "road" || signal == "ware") {
+		if (log_wanted(this)) log("NOCOM ************** Carrier::road_update road or ware\n");
 		// The road changed under us or we're supposed to pick up some ware
 		signal_handled();
 	} else if (signal == "blocked") {
 		// Blocked by an ongoing battle
+		if (log_wanted(this)) log("NOCOM ************** Carrier::road_update blocked\n");
 		signal_handled();
 		set_animation(game, descr().get_animation("idle"));
 		return schedule_act(game, 250);
 	} else if (signal.size()) {
+		if (log_wanted(this)) log("NOCOM ************** Carrier::road_update signal\n");
 		// Something else happened (probably a location signal)
 		molog("[road]: Terminated by signal '%s'\n", signal.c_str());
 		return pop_task(game);
 	}
 
+	if (log_wanted(this)) log("NOCOM ************** Carrier::road_update operation: %d\n", operation_);
+
 	if (operation_ == INIT) {
-		// NOCOM test this
+		// NOCOM this is never called
 		operation_ = find_source_flag(game);
 	}
 
@@ -104,8 +109,8 @@ void Carrier::road_update(Game& game, State& state) {
 			// Short delay before we move to pick up
 			state.ivar1 = 1;
 
-			set_animation(game, descr().get_animation("idle"));
-			return schedule_act(game, 50);
+			// NOCOM set_animation(game, descr().get_animation("idle"));
+			start_task_idle(game, descr().get_animation("idle"), 50);
 		}
 	}
 
@@ -118,13 +123,20 @@ void Carrier::road_update(Game& game, State& state) {
 
 	// Be bored. There's nothing good on TV, either.
 	// TODO(unknown): idle animations
-	set_animation(game, descr().get_animation("idle"));
+	//set_animation(game, descr().get_animation("idle"));
 	state.ivar1 = 1;  //  we are available immediately after an idle phase
 	// subtract maintenance cost and check for road demotion
 	road.charge_wallet(game);
+
+	operation_ = INIT;
+
 	// if road still promoted then schedule demotion, otherwise go fully idle waiting until signal
-	return road.get_roadtype() == RoadType::kBusy ? schedule_act(game, (road.wallet() + 2) * 500) :
-	                                                skip_act();
+	/*
+	road.get_roadtype() == RoadType::kBusy ? schedule_act(game, (road.wallet() + 2) * 500) :
+	                                                schedule_act(game, 250); // NOCOM skip_act();
+													*/
+	start_task_idle(game, descr().get_animation("idle"), (road.get_roadtype() == RoadType::kBusy) ? (road.wallet() + 2) * 500 : 250);
+	return;
 }
 
 /**
@@ -166,13 +178,16 @@ void Carrier::transport_update(Game& game, State& state) {
 	std::string signal = get_signal();
 
 	if (signal == "road") {
+		if (log_wanted(this)) log("NOCOM ************** Carrier::transport_update road\n");
 		signal_handled();
 	} else if (signal == "blocked") {
+		if (log_wanted(this)) log("NOCOM ************** Carrier::transport_update blocked\n");
 		// Blocked by an ongoing battle
 		signal_handled();
 		set_animation(game, descr().get_animation("idle"));
 		return schedule_act(game, 250);
 	} else if (signal.size()) {
+		if (log_wanted(this)) log("NOCOM ************** Carrier::transport_update interrupted\n");
 		molog("[transport]: Interrupted by signal '%s'\n", signal.c_str());
 		return pop_task(game);
 	}
@@ -194,6 +209,7 @@ void Carrier::transport_update(Game& game, State& state) {
 	Flag& flag = road.get_flag(static_cast<Road::FlagId>(dest));
 
 	if (ware) {
+		if (log_wanted(this)) log("NOCOM ************** Carrier::transport_update ware\n");
 		// If the ware should go to the building attached to our flag,
 		// walk directly into said building
 		// A sanity check is necessary, in case the building has been destroyed
@@ -214,6 +230,7 @@ void Carrier::transport_update(Game& game, State& state) {
 	}
 
 	if (!start_task_walktoflag(game, dest, operation_ == WAIT)) {
+		if (log_wanted(this)) log("NOCOM ************** Carrier::transport_update !start_task_walktoflag\n");
 		// If the flag is overloaded we are allowed to drop wares,
 		// as long as we can pick another up. Otherwise we have to wait.
 
@@ -235,6 +252,8 @@ void Carrier::transport_update(Game& game, State& state) {
 		}
 
 		WareInstance* otherware = flag.fetch_pending_ware(game, otherware_idx);
+
+		if (log_wanted(this)) log("NOCOM ************** Carrier::transport_update otherware\n");
 
 		if (ware) {
 			// Drop our ware
@@ -320,22 +339,28 @@ bool Carrier::notify_ware(Game& game, int32_t const flag) {
 	State& state = top_state();
 	if (log_wanted(this)) {
 		log("NOCOM ************** Carrier::notify_ware (%d, %d)\n", get_position().x, get_position().y);
-		log("NOCOM ########################### loading state vars %d %d %d %d %s (%d, %d)\n", state.ivar1, state.ivar2, state.ivar3, state.objvar1.serial(), state.svar1.c_str(), state.coords.x, state.coords.y);
+		log("NOCOM ########################### state vars %d %d %d %d %s (%d, %d)\n", state.ivar1, state.ivar2, state.ivar3, state.objvar1.serial(), state.svar1.c_str(), state.coords.x, state.coords.y);
 	}
 	// NOCOM test this
 
 	if (operation_ == WAIT) {
+		if (log_wanted(this)) log("NOCOM WAIT\n");
 		if (state.objvar1.get(game) ==
 		    &dynamic_cast<Road&>(*get_location(game)).get_flag(static_cast<Road::FlagId>(flag))) {
 			operation_ = flag;
+			if (log_wanted(this)) log("NOCOM -> wakeup\n");
 			send_signal(game, "wakeup");
 			return true;
 		}
 	} else if (operation_ == NO_OPERATION) {
+		if (log_wanted(this)) log("NOCOM NO_OPERATION -> ware\n");
 		operation_ = flag;
 		send_signal(game, "ware");
 		return true;
 	}
+
+	if (log_wanted(this)) log("NOCOM NOTHING DONE. operation: %d\n", operation_);
+	//send_signal(game, "wakeup");
 
 	return false;
 }
@@ -359,7 +384,7 @@ int32_t Carrier::find_source_flag(Game& game) {
 	if ((pw = nearflag.get_ware_for_flag(farflag))) {
 		pw->pending = false;
 		return near;
-	} else if ((pw = farflag.get_ware_for_flag(nearflag, kPendingOnly))) {
+	} else if ((pw = farflag.get_ware_for_flag(nearflag))) {
 		pw->pending = false;
 		return near ^ 1;
 	} else {

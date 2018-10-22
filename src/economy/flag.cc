@@ -37,6 +37,7 @@
 
 namespace {
 const Widelands::Coords test_coords(199, 199);
+const Widelands::Coords target_flag_coords(197, 199);
 const uint32_t test_coords_hash = test_coords.hash();
 
 } // namespace
@@ -353,39 +354,46 @@ bool Flag::is_dead_end() const {
  * \return true/allow on low congestion-risk.
  */
 bool Flag::has_capacity_for_ware(WareInstance& ware) const {
+	/*
 	bool test = false;
 	if (get_position().hash() == test_coords_hash) {
-		log("NOCOM has_capacity_for_ware (%d, %d) %s - this\n", get_position().x, get_position().y, ware.descr().name().c_str());
+		log("NOCOM *************** Flag::has_capacity_for_ware (%d, %d) %s - this\n", get_position().x, get_position().y, ware.descr().name().c_str());
 		test = true;
 	}
-	if (abs(get_position().x - test_coords.x) <= 1 && abs(get_position().y - test_coords.y) <= 1) {
-		log("NOCOM has_capacity_for_ware (%d, %d) %s - very near flag\n", get_position().x, get_position().y, ware.descr().name().c_str());
+	if (abs(get_position().x - test_coords.x) <= 1 && abs(get_position().y - test_coords.y) <= 0) {
+		log("NOCOM *************** Flag::has_capacity_for_ware (%d, %d) %s - very near flag\n", get_position().x, get_position().y, ware.descr().name().c_str());
 		test = true;
 	}
-	/*else if (get_position().x == test_coords.x - 2 || get_position().x == test_coords.x + 2 || get_position().y == test_coords.y - 2 || get_position().y == test_coords.y + 2) {
-		log("NOCOM has_capacity_for_ware (%d, %d) %s - near flag\n", get_position().x, get_position().y, ware.descr().name().c_str());
+	if (abs(get_position().x - test_coords.x) <= 2 && abs(get_position().y - test_coords.y) <= 0) {
+		log("NOCOM *************** Flag::has_capacity_for_ware (%d, %d) %s - near flag\n", get_position().x, get_position().y, ware.descr().name().c_str());
 		test = true;
 	}
 	*/
+
+	const bool test = get_position().hash() == target_flag_coords.hash();
+	if (test) {
+		log("NOCOM *************** Flag::has_capacity_for_ware (%d, %d) %s\n", get_position().x, get_position().y, ware.descr().name().c_str());
+	}
+
 	// NOCOM check this
 	// avoid iteration for the easy cases
 	if (ware_filled_ < ware_capacity_ - 2) {
-		if (test) log("NOCOM ware_filled_ < ware_capacity_ - 2 true\n");
+		if (test) log("NOCOM HAS CAPACITY ware_filled_ < ware_capacity_ - 2 true\n");
 		return true;  // more than two free slots, allow
 	}
 	if (ware_filled_ >= ware_capacity_) {
-		if (test) log("NOCOM ware_filled_ >= ware_capacity_ false\n");
+		if (test) log("NOCOM NO CAPACITY ware_filled_ >= ware_capacity_ false\n");
 		return false;  // all slots filled, no room
 	}
 
 	DescriptionIndex const descr_index = ware.descr_index();
 	for (int i = 0; i < ware_filled_; ++i) {
 		if (wares_[i].ware->descr_index() == descr_index) {
-			if (test) log("NOCOM already there - false\n");
+			if (test) log("NOCOM NO CAPACITY already there - false\n");
 			return false;  // ware of this type already present, leave room for other types
 		}
 	}
-	if (test) log("NOCOM end - true\n");
+	if (test) log("NOCOM end - HAS CAPACITY\n");
 	return true;  // ware of this type not present, allow
 }
 
@@ -394,8 +402,8 @@ bool Flag::has_capacity_for_ware(WareInstance& ware) const {
  * has_capacity_for_ware() also checks ware's type to prevent congestion.
  */
 bool Flag::has_capacity() const {
-	if (get_position().hash() == test_coords_hash) {
-		log("NOCOM **** Flag::has_capacity (%d, %d)\n", get_position().x, get_position().y);
+	if (get_position().hash() == target_flag_coords.hash()) {
+		log("NOCOM *************** Flag::has_capacity (%d, %d)\n", get_position().x, get_position().y);
 	}
 	return (ware_filled_ < ware_capacity_);
 }
@@ -484,28 +492,46 @@ void Flag::init_ware(EditorGameBase& egbase, WareInstance& ware, PendingWare& pi
 Flag::PendingWare* Flag::get_ware_for_flag(Flag& destflag, bool const pending_only) {
 	bool test = false;
 	if (get_position().hash() == test_coords_hash) {
-		log("NOCOM get_ware_for_flag (%d, %d) -> (%d, %d) - this\n", get_position().x, get_position().y, destflag.get_position().x, destflag.get_position().y);
+		log("NOCOM ######################### get_ware_for_flag (%d, %d) -> (%d, %d) - this\n", get_position().x, get_position().y, destflag.get_position().x, destflag.get_position().y);
 		test = true;
 	}
 	if (destflag.get_position().hash() == test_coords_hash) {
-		log("NOCOM get_ware_for_flag (%d, %d) -> (%d, %d) - other\n", destflag.get_position().x, destflag.get_position().y, get_position().x, get_position().y);
+		log("NOCOM ######################### get_ware_for_flag (%d, %d) -> (%d, %d) - other\n", destflag.get_position().x, destflag.get_position().y, get_position().x, get_position().y);
 		test = true;
 	}
 	// NOCOM test this
-	if (test) log("NOCOM ware_filled_: %d\n", ware_filled_);
+	if (test) log("NOCOM +++ ware_filled_: %d\n", ware_filled_);
 	for (int32_t i = 0; i < ware_filled_; ++i) {
 		PendingWare* pw = &wares_[i];
 		if (test) {
 			log("NOCOM testing ware: %s\n", pw->ware->descr().name().c_str());
 			log("NOCOM !pending_only ? %s\n", !pending_only ? "true" : "false");
 			log("NOCOM pw->pending ? %s\n", pw->pending ? "true" : "false");
+			//pw->nextstep.get(get_owner()->egbase())->
 			log("NOCOM pw->nextstep == &destflag ? %s\n", pw->nextstep == &destflag ? "true" : "false");
+			if (pw->nextstep != nullptr) {
+				Coords dest_position(pw->nextstep.get(get_owner()->egbase())->get_positions(get_owner()->egbase())[0]);
+				log("NOCOM pw->nextstep position: (%d, %d)\n", dest_position.x, dest_position.y);
+			} else {
+				// NOCOM nextstep is empty where we should have a destination
+				log("NOCOM pw->nextstep is empty\n");
+			}
 			log("NOCOM destflag.allow_ware_from_flag(*pw->ware, *this) ? %s\n", destflag.allow_ware_from_flag(*pw->ware, *this) ? "true" : "false");
 		}
 		if ((!pending_only || pw->pending) && pw->nextstep == &destflag &&
 		    destflag.allow_ware_from_flag(*pw->ware, *this)) {
 			if (test) log("NOCOM found ware: %s\n", pw->ware->descr().name().c_str());
 			return pw;
+		}
+	}
+
+	// We didn't find anything with priority, so let's schedule a ware for the next round if there is one
+	if (current_wares() > 0 && destflag.current_wares() < 6) {
+		PendingWare* pw = &wares_[0];
+		if (pw->nextstep == nullptr) {
+			upcast(Game, game, &get_owner()->egbase());
+			init_ware(*game, *pw->ware, *pw);
+			pw->ware->update(*game);
 		}
 	}
 
@@ -820,7 +846,16 @@ void Flag::remove_ware(EditorGameBase& egbase, WareInstance* const ware) {
 void Flag::call_carrier(Game& game, WareInstance& ware, PlayerImmovable* const nextstep) {
 	last_update_ = game.get_gametime();
 	if (get_position().hash() == test_coords_hash) {
-		log("NOCOM call_carrier - this\n");
+		log("NOCOM **** call_carrier - this\n");
+		/*
+		if (nextstep != nullptr) {
+			Coords dest_position(nextstep->get(get_owner()->egbase())->get_positions(get_owner()->egbase())[0]);
+			log("NOCOM nextstep position: (%d, %d)", dest_position.x, dest_position.y);
+		} else {
+			// NOCOM nextstep is empty where we should have a destination
+			log("NOCOM nextstep is empty\n");
+		}
+		*/
 	}
 	PendingWare* pi = nullptr;
 	int32_t i = 0;
@@ -909,6 +944,7 @@ bool Flag::allow_ware_from_flag(WareInstance& ware, Flag& flag) {
 	if (flag.get_position().hash() == test_coords_hash) {
 		log("NOCOM allow_ware_from_flag - other\n");
 	}
+
 	// NOCOM test this
 	// avoid iteration for the easy cases
 	if (ware_filled_ < ware_capacity_ - 2) {
@@ -1151,16 +1187,20 @@ void Flag::unfreeze_wares(Game& game) {
 	const int gametime = game.get_gametime();
 	if (gametime > last_update_ + kTriggerPotentiallyFrozenFlagInterval) {
 		if (ware_filled_ > 0) {
-			molog("%d: Potentially frozen flag for Player %d at (%d, %d) - %d wares\n", static_cast<int>(gametime / 1000), static_cast<unsigned int>(owner().player_number()), get_position().x, get_position().y, ware_filled_);
+			if (test) {
+				log("%d: Potentially frozen flag for Player %d at (%d, %d) - %d wares\n", static_cast<int>(gametime / 1000), static_cast<unsigned int>(owner().player_number()), get_position().x, get_position().y, ware_filled_);
+			}
 			++freeze_counter_;
 		}
 		last_update_ = gametime;
 	} else {
 		freeze_counter_ = 0;
 	}
-	if (freeze_counter_ > 2) {
-		if ( ware_filled_ > 0) {
-			log("%d: Unfreezing flag for Player %d at (%d, %d) - %d wares\n", static_cast<int>(gametime / 1000), static_cast<unsigned int>(owner().player_number()), get_position().x, get_position().y, ware_filled_);
+	if (freeze_counter_ > 1) {
+		if (ware_filled_ > 0) {
+			if (test) {
+				log("%d: Unfreezing flag for Player %d at (%d, %d) - %d wares\n", static_cast<int>(gametime / 1000), static_cast<unsigned int>(owner().player_number()), get_position().x, get_position().y, ware_filled_);
+			}
 			for (int32_t i = 0; i < ware_filled_; ++i) {
 				init_ware(game, *wares_[i].ware, wares_[i]);
 				wares_[i].ware->update(game);

@@ -71,7 +71,7 @@ const Widelands::Coords test_coords(198, 199);
 const uint32_t test_coords_hash = test_coords.hash();
 
 bool log_wanted(Widelands::Bob* carrier) {
-	return (carrier->descr().type() == Widelands::MapObjectType::CARRIER && abs(carrier->get_position().x - test_coords.x) <= 1 && abs(carrier->get_position().y - test_coords.y) <= 1);
+	return (carrier->descr().type() == Widelands::MapObjectType::CARRIER && abs(carrier->get_position().x - test_coords.x) <= 1 && abs(carrier->get_position().y - test_coords.y) <= 0);
 }
 
 } // namespace

@@ -49,11 +49,11 @@
 #include "wui/mapviewpixelconstants.h"
 
 namespace {
-const Widelands::Coords test_coords(51, 111);
+const Widelands::Coords test_coords(198, 199);
 const uint32_t test_coords_hash = test_coords.hash();
 
 bool log_wanted(Widelands::Bob* carrier) {
-	return (carrier->descr().type() == Widelands::MapObjectType::CARRIER && abs(carrier->get_position().x - test_coords.x) <= 1 && abs(carrier->get_position().y - test_coords.y) <= 1);
+	return (carrier->descr().type() == Widelands::MapObjectType::CARRIER && abs(carrier->get_position().x - test_coords.x) <= 1 && abs(carrier->get_position().y - test_coords.y) <= 0);
 }
 
 } // namespace
@@ -622,6 +622,10 @@ bool Bob::start_task_movepath(Game& game,
 }
 
 void Bob::movepath_update(Game& game, State& state) {
+	if (log_wanted(this)) {
+		log("NOCOM Bob:: movepath_update\n");
+	}
+
 	if (get_signal().size()) {
 		return pop_task(game);
 	}

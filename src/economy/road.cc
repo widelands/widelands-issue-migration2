@@ -40,7 +40,7 @@ namespace {
 const Widelands::Coords test_coords(198, 199);
 const uint32_t test_coords_hash = test_coords.hash();
 bool log_wanted(Flag* flag) {
-	return (abs(flag->get_position().x - test_coords.x) <= 2 && abs(flag->get_position().y - test_coords.y) <= 2);
+	return (abs(flag->get_position().x - test_coords.x) <= 1 && abs(flag->get_position().y - test_coords.y) <= 0);
 }
 
 } // namespace
@@ -557,13 +557,17 @@ bool Road::notify_ware(Game& game, Flag& flag) {
 	FlagId flagid = &flag == flags_[Road::FlagEnd] ? Road::FlagEnd : Road::FlagStart;
 	// Iterate over all carriers and try to find one which will take the ware
 	for (CarrierSlot& slot : carrier_slots_) {
+		if (log_wanted(&flag)) log("NOCOM testing carrier slot\n");
 		if (Carrier* const carrier = slot.carrier.get(game)) {
+			if (log_wanted(&flag)) log("NOCOM carrier found\n");
 			if (carrier->notify_ware(game, flagid)) {
+				if (log_wanted(&flag)) log("NOCOM carrier took the ware\n");
 				// The carrier took the ware, so we're done
 				return true;
 			}
 		}
 	}
+	if (log_wanted(&flag)) log("NOCOM NO carrier took the ware\n");
 	// No carrier took the ware
 	return false;
 }
