@@ -87,6 +87,16 @@ Request::~Request() {
 		cancel_transfer(0);
 }
 
+void Request::log_general_info(const EditorGameBase& egbase) const {
+	if (count_ > 0) {
+		for (size_t i = 0; i < transfers_.size(); ++i) {
+			if (transfers_.at(i) != nullptr) {
+				transfers_.at(i)->log_general_info(egbase);
+			}
+		}
+	}
+}
+
 // Modified to allow Requirements and SoldierRequests
 constexpr uint16_t kCurrentPacketVersion = 6;
 

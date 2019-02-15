@@ -128,6 +128,12 @@ uint32_t InputQueue::get_missing() const {
 	return max_fill_ - filled - std::min(max_fill_, request_->get_num_transfers());
 }
 
+void InputQueue::log_general_info(const EditorGameBase& egbase) const {
+	if (request_ != nullptr) {
+		request_->log_general_info(egbase);
+	}
+}
+
 constexpr uint16_t kCurrentPacketVersion = 3;
 
 void InputQueue::read(FileRead& fr,

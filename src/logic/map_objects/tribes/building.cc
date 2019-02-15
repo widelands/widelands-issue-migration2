@@ -767,7 +767,8 @@ void Building::log_general_info(const EditorGameBase& egbase) const {
 	molog("leave_queue.size(): %" PRIuS "\n", leave_queue_.size());
 	FORMAT_WARNINGS_OFF
 	molog("leave_allow.get(): %p\n", leave_allow_.get(egbase));
-	FORMAT_WARNINGS_ON
+	FORMAT_WARNINGS_ON;
+	// NOCOM
 }
 
 void Building::add_worker(Worker& worker) {

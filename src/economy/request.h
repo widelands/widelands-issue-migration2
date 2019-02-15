@@ -115,6 +115,8 @@ public:
 		last_request_time_ = time;
 	}
 
+	void log_general_info(const EditorGameBase&) const;
+
 	void start_transfer(Game&, Supply&);
 
 	void

@@ -62,6 +62,8 @@ struct Transfer {
 		return route_.get_nrsteps();
 	}
 
+	void log_general_info(const EditorGameBase&) const;
+
 	/// Called by the controlled ware or worker
 	PlayerImmovable* get_next_step(PlayerImmovable*, bool& psuccess);
 	void has_finished();

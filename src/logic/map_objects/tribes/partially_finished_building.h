@@ -64,6 +64,8 @@ public:
 	static void
 	request_builder_callback(Game&, Request&, DescriptionIndex, Worker*, PlayerImmovable&);
 
+	void log_general_info(const EditorGameBase&) const override;
+
 private:
 	void request_builder(Game&);
 

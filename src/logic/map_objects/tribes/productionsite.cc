@@ -776,7 +776,18 @@ void ProductionSite::log_general_info(const EditorGameBase& egbase) const {
 	Building::log_general_info(egbase);
 
 	molog("is_stopped: %u\n", is_stopped_);
-	molog("main_worker: %i\n", main_worker_);
+  molog("main_worker: %i\n", main_worker_);
+
+	for (InputQueue* queue : input_queues_) {
+		std::string queue_name = "";
+		if (queue->get_type() == WareWorker::wwWARE) {
+			queue_name = egbase.tribes().get_ware_descr(queue->get_index())->name();
+		} else {
+			queue_name = egbase.tribes().get_worker_descr(queue->get_index())->name();
+		}
+		molog("Input queue for: %s\n", queue_name.c_str());
+		queue->log_general_info(egbase);
+	}
 }
 
 void ProductionSite::set_stopped(bool const stopped) {

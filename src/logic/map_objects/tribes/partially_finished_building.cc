@@ -193,4 +193,18 @@ void PartiallyFinishedBuilding::request_builder_callback(
 	w->start_task_buildingwork(game);
 	b.set_seeing(true);
 }
+
+void PartiallyFinishedBuilding::log_general_info(const EditorGameBase& egbase) const {
+	Building::log_general_info(egbase);
+	for (WaresQueue* queue : wares_) {
+		std::string queue_name = "";
+		if (queue->get_type() == WareWorker::wwWARE) {
+			queue_name = egbase.tribes().get_ware_descr(queue->get_index())->name();
+		} else {
+			queue_name = egbase.tribes().get_worker_descr(queue->get_index())->name();
+		}
+		molog("Input queue for: %s\n", queue_name.c_str());
+		queue->log_general_info(egbase);
+	}
+}
 }  // namespace Widelands

@@ -77,6 +77,20 @@ Transfer::~Transfer() {
 	}
 }
 
+void Transfer::log_general_info(const EditorGameBase&) const {
+	int32_t no_steps = route_.get_nrsteps();
+	if (no_steps < 1) {
+		log("Transfer: Empty route\n");
+	} else {
+		log("Transfer: Route has %d steps:", no_steps);
+		for (int32_t i = 0; i < no_steps; ++i) {
+			Flag& flag = route_.get_flag(game_, i);
+			log(" (%d,%d)", flag.get_position().x, flag.get_position().y);
+		}
+		log("\n");
+	}
+}
+
 /**
  * Override the \ref Request of this transfer.
  *

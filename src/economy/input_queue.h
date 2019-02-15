@@ -178,6 +178,8 @@ public:
 		return owner_.owner();
 	}
 
+	void log_general_info(const EditorGameBase&) const;
+
 	/**
 	 * Overwrites the state of this class with the read data.
 	 * @param fr A stream to read the data from.
