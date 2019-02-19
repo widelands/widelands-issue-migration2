@@ -84,7 +84,7 @@ public:
 	bool is_moving() const;
 	void cancel_moving();
 
-	PlayerImmovable* get_next_move_step(Game&);
+	PlayerImmovable* get_next_move_step(const EditorGameBase&) const;
 
 	void set_transfer(Game&, Transfer&);
 	void cancel_transfer(Game&);

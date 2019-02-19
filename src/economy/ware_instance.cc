@@ -499,8 +499,8 @@ void WareInstance::cancel_moving() {
  * Return the next flag we should be moving to, or the final target if the route
  * has been completed successfully.
  */
-PlayerImmovable* WareInstance::get_next_move_step(Game& game) {
-	return transfer_ ? dynamic_cast<PlayerImmovable*>(transfer_nextstep_.get(game)) : nullptr;
+PlayerImmovable* WareInstance::get_next_move_step(const EditorGameBase& egbase) const {
+	return transfer_ ? dynamic_cast<PlayerImmovable*>(transfer_nextstep_.get(egbase)) : nullptr;
 }
 
 void WareInstance::log_general_info(const EditorGameBase& egbase) const {

@@ -876,9 +876,17 @@ void Flag::log_general_info(const Widelands::EditorGameBase& egbase) const {
 		molog("Wares at flag:\n");
 		for (int i = 0; i < ware_filled_; ++i) {
 			PendingWare& pi = wares_[i];
-			molog(" %i/%i: %s(%i), nextstep %i, %s\n", i + 1, ware_capacity_,
-			      pi.ware->descr().name().c_str(), pi.ware->serial(), pi.nextstep.serial(),
-			      pi.pending ? "pending" : "acked by carrier");
+			const WareInstance& wi = *pi.ware;
+			PlayerImmovable* next_move_step = wi.get_next_move_step(egbase);
+				Flag& next_flag = next_move_step->base_flag();
+				const PositionList& poslist = next_move_step->get_positions(egbase);
+				molog(" %i/%i: %s(%i), nextstep %i == %s %i @ (%d,%d), %s\n\t", i + 1, ware_capacity_,
+					  wi.descr().name().c_str(), wi.serial(), pi.nextstep.serial(),
+					  next_move_step->descr().name().c_str(),
+					  next_move_step->serial(),
+					  next_flag.get_position().x, next_flag.get_position().y,
+					  pi.pending ? "pending" : "acked by carrier");
+			wi.get_transfer()->log_general_info(egbase);
 		}
 	} else {
 		molog("No wares at flag.\n");
