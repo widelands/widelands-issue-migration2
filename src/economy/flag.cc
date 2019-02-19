@@ -460,10 +460,10 @@ bool Flag::ack_pickup(Game&, Flag& destflag) {
 	return false;
 }
 /**
- * Called by carrier code to find the best among the wares on this flag
- * that are meant for the provided dest.
- * \return index of found ware (carrier will take it)
- * or kNotFoundAppropriate (carrier will leave empty-handed)
+ * Called by the carriercode when the carrier is called away from his job
+ * but has acknowledged a ware before. This ware is then freed again
+ * to be picked by another carrier. Returns true if an ware was indeed
+ * made pending again
  */
 bool Flag::cancel_pickup(Game& game, Flag& destflag) {
 	int32_t lowest_prio = MAX_TRANSFER_PRIORITY + 1;
