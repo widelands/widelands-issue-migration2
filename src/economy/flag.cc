@@ -668,6 +668,8 @@ void Flag::call_carrier(Game& game, WareInstance& ware, PlayerImmovable* const n
 	pi->nextstep = nextstep;
 	pi->pending = false;
 
+	assert(pi->ware->get_transfer()->get_steps_left() > 0);
+
 	// Deal with the building case
 	if (nextstep == get_building()) {
 		molog("Flag::call_carrier(%u): Tell building to fetch this ware\n", ware.serial());
@@ -733,6 +735,12 @@ void Flag::update_wares(Game& game, Flag* const other) {
 
 	for (int32_t i = 0; i < ware_filled_; ++i) {
 		wares_[i].ware->update(game);
+		if (wares_[i].ware->get_transfer() == nullptr) {
+			// NOCOM log_general_info(game);
+		} else {
+			// NOCOM when the bug is fixed, maybe we can assert this always?
+			assert(wares_[i].ware->get_transfer()->get_steps_left() > 0);
+		}
 	}
 
 	always_call_for_flag_ = nullptr;
@@ -878,15 +886,24 @@ void Flag::log_general_info(const Widelands::EditorGameBase& egbase) const {
 			PendingWare& pi = wares_[i];
 			const WareInstance& wi = *pi.ware;
 			PlayerImmovable* next_move_step = wi.get_next_move_step(egbase);
-				Flag& next_flag = next_move_step->base_flag();
-				const PositionList& poslist = next_move_step->get_positions(egbase);
-				molog(" %i/%i: %s(%i), nextstep %i == %s %i @ (%d,%d), %s\n\t", i + 1, ware_capacity_,
+			if (next_move_step != nullptr) {
+					Flag& next_flag = next_move_step->base_flag();
+					const PositionList& poslist = next_move_step->get_positions(egbase);
+					molog(" %i/%i: %s(%i), nextstep %i == %s %i @ (%d,%d), %s\n\t", i + 1, ware_capacity_,
+						  wi.descr().name().c_str(), wi.serial(), pi.nextstep.serial(),
+						  next_move_step->descr().name().c_str(),
+						  next_move_step->serial(),
+						  next_flag.get_position().x, next_flag.get_position().y,
+						  pi.pending ? "pending" : "acked by carrier");
+			} else {
+				molog(" %i/%i: %s(%i), nextstep %i == no next flag, %s\n\t", i + 1, ware_capacity_,
 					  wi.descr().name().c_str(), wi.serial(), pi.nextstep.serial(),
-					  next_move_step->descr().name().c_str(),
-					  next_move_step->serial(),
-					  next_flag.get_position().x, next_flag.get_position().y,
 					  pi.pending ? "pending" : "acked by carrier");
-			wi.get_transfer()->log_general_info(egbase);
+			}
+			Transfer* transf = wi.get_transfer();
+			if (transf != nullptr) {
+				transf->log_general_info(egbase);
+			}
 		}
 	} else {
 		molog("No wares at flag.\n");

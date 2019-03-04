@@ -106,7 +106,7 @@ private:
 	// loading and saving stuff
 protected:
 	struct Loader : MapObject::Loader {
-		Loader() = default;
+		Loader();
 
 		void load(FileRead&);
 		void load_pointers() override;
