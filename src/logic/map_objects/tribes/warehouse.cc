@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2002-2017 by the Widelands Development Team
+ * Copyright (C) 2002-2019 by the Widelands Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,9 +37,9 @@
 #include "economy/warehousesupply.h"
 #include "economy/wares_queue.h"
 #include "logic/editor_game_base.h"
-#include "logic/findbob.h"
-#include "logic/findnode.h"
 #include "logic/game.h"
+#include "logic/map_objects/findbob.h"
+#include "logic/map_objects/findnode.h"
 #include "logic/map_objects/tribes/battle.h"
 #include "logic/map_objects/tribes/carrier.h"
 #include "logic/map_objects/tribes/requirements.h"
@@ -78,20 +78,20 @@ void Warehouse::AttackTarget::enemy_soldier_approaches(const Soldier& enemy) con
 	if (!warehouse_->descr().get_conquers())
 		return;
 
-	Player& owner = warehouse_->owner();
-	Game& game = dynamic_cast<Game&>(owner.egbase());
-	Map& map = game.map();
-	if (enemy.get_owner() == &owner || enemy.get_battle() ||
+	Player* owner = warehouse_->get_owner();
+	Game& game = dynamic_cast<Game&>(owner->egbase());
+	const Map& map = game.map();
+	if (enemy.get_owner() == owner || enemy.get_battle() ||
 	    warehouse_->descr().get_conquers() <=
 	       map.calc_distance(enemy.get_position(), warehouse_->get_position()))
 		return;
 
-	if (game.map().find_bobs(
-	       Area<FCoords>(map.get_fcoords(warehouse_->base_flag().get_position()), 2), nullptr,
-	       FindBobEnemySoldier(&owner)))
+	if (map.find_bobs(game,
+	                  Area<FCoords>(map.get_fcoords(warehouse_->base_flag().get_position()), 2),
+	                  nullptr, FindBobEnemySoldier(owner)))
 		return;
 
-	DescriptionIndex const soldier_index = owner.tribe().soldier();
+	DescriptionIndex const soldier_index = owner->tribe().soldier();
 	Requirements noreq;
 
 	if (!warehouse_->count_workers(game, soldier_index, noreq, Match::kCompatible))
@@ -103,9 +103,9 @@ void Warehouse::AttackTarget::enemy_soldier_approaches(const Soldier& enemy) con
 }
 
 AttackTarget::AttackResult Warehouse::AttackTarget::attack(Soldier* enemy) const {
-	Player& owner = warehouse_->owner();
-	Game& game = dynamic_cast<Game&>(owner.egbase());
-	DescriptionIndex const soldier_index = owner.tribe().soldier();
+	Player* owner = warehouse_->get_owner();
+	Game& game = dynamic_cast<Game&>(owner->egbase());
+	DescriptionIndex const soldier_index = owner->tribe().soldier();
 	Requirements noreq;
 
 	if (warehouse_->count_workers(game, soldier_index, noreq, Match::kCompatible)) {
@@ -288,19 +288,19 @@ Warehouse Building
 */
 
 /**
-  * The contents of 'table' are documented in
-  * /data/tribes/buildings/warehouses/atlanteans/headquarters/init.lua
-  */
+ * The contents of 'table' are documented in
+ * /data/tribes/buildings/warehouses/atlanteans/headquarters/init.lua
+ */
 WarehouseDescr::WarehouseDescr(const std::string& init_descname,
                                const LuaTable& table,
-                               const EditorGameBase& egbase)
-   : BuildingDescr(init_descname, MapObjectType::WAREHOUSE, table, egbase),
+                               const Tribes& tribes)
+   : BuildingDescr(init_descname, MapObjectType::WAREHOUSE, table, tribes),
      conquers_(0),
      heal_per_second_(0) {
 	heal_per_second_ = table.get_int("heal_per_second");
 	if (table.has_key("conquers")) {
 		conquers_ = table.get_int("conquers");
-		workarea_info_[conquers_].insert(descname() + " conquer");
+		workarea_info_[conquers_].insert(name() + " conquer");
 	}
 }
 
@@ -495,24 +495,24 @@ void Warehouse::load_finish(EditorGameBase& egbase) {
 bool Warehouse::init(EditorGameBase& egbase) {
 	Building::init(egbase);
 
-	Player& player = owner();
+	Player* player = get_owner();
 
-	init_containers(player);
+	init_containers(*player);
 
 	// Even though technically, a warehouse might be completely empty,
 	// we let warehouse see always for simplicity's sake (since there's
 	// almost always going to be a carrier inside, that shouldn't hurt).
 	if (upcast(Game, game, &egbase)) {
-		player.see_area(
+		player->see_area(
 		   Area<FCoords>(egbase.map().get_fcoords(get_position()), descr().vision_range()));
 
 		{
 			uint32_t const act_time = schedule_act(*game, WORKER_WITHOUT_COST_SPAWN_INTERVAL);
 			const std::vector<DescriptionIndex>& worker_types_without_cost =
-			   owner().tribe().worker_types_without_cost();
+			   player->tribe().worker_types_without_cost();
 
 			for (size_t i = 0; i < worker_types_without_cost.size(); ++i) {
-				if (owner().is_worker_type_allowed(worker_types_without_cost.at(i))) {
+				if (player->is_worker_type_allowed(worker_types_without_cost.at(i))) {
 					next_worker_without_cost_spawn_[i] = act_time;
 				}
 			}
@@ -525,7 +525,7 @@ bool Warehouse::init(EditorGameBase& egbase) {
 		next_stock_remove_act_ = schedule_act(*game, 4000);
 
 		log("Message: adding %s for player %i at (%d, %d)\n", to_string(descr().type()).c_str(),
-		    player.player_number(), position_.x, position_.y);
+		    player->player_number(), position_.x, position_.y);
 
 		if (descr().get_isport()) {
 			send_message(*game, Message::Type::kSeafaring, descr().descname(), descr().icon_filename(),
@@ -542,7 +542,7 @@ bool Warehouse::init(EditorGameBase& egbase) {
 	if (uint32_t const conquer_radius = descr().get_conquers()) {
 		egbase.conquer_area(
 		   PlayerArea<Area<FCoords>>(
-		      player.player_number(),
+		      player->player_number(),
 		      Area<FCoords>(egbase.map().get_fcoords(get_position()), conquer_radius)),
 		   true);
 	}
@@ -560,7 +560,7 @@ bool Warehouse::init(EditorGameBase& egbase) {
 	return true;
 }
 
-void Warehouse::init_containers(Player& player) {
+void Warehouse::init_containers(const Player& player) {
 	DescriptionIndex const nr_wares = player.egbase().tribes().nrwares();
 	DescriptionIndex const nr_workers = player.egbase().tribes().nrworkers();
 	supply_->set_nrwares(nr_wares);
@@ -580,8 +580,7 @@ void Warehouse::init_containers(Player& player) {
 void Warehouse::init_portdock(EditorGameBase& egbase) {
 	molog("Setting up port dock fields\n");
 
-	Map& map = egbase.map();
-	std::vector<Coords> dock = map.find_portdock(get_position());
+	std::vector<Coords> dock = egbase.map().find_portdock(get_position());
 	if (dock.empty()) {
 		log("Attempting to setup port without neighboring water (coords: %3dx%3d).\n",
 		    get_position().x, get_position().y);
@@ -669,7 +668,7 @@ void Warehouse::cleanup(EditorGameBase& egbase) {
 		planned_workers_.pop_back();
 	}
 
-	Map& map = egbase.map();
+	const Map& map = egbase.map();
 	if (const uint32_t conquer_radius = descr().get_conquers())
 		egbase.unconquer_area(
 		   PlayerArea<Area<FCoords>>(owner().player_number(),
@@ -677,8 +676,7 @@ void Warehouse::cleanup(EditorGameBase& egbase) {
 		   defeating_player_);
 
 	// Unsee the area that we started seeing in init()
-	Player& player = owner();
-	player.unsee_area(Area<FCoords>(map.get_fcoords(get_position()), descr().vision_range()));
+	get_owner()->unsee_area(Area<FCoords>(map.get_fcoords(get_position()), descr().vision_range()));
 
 	Building::cleanup(egbase);
 }
@@ -918,7 +916,7 @@ Worker& Warehouse::launch_worker(Game& game, DescriptionIndex worker_id, const R
 				// NOTE: This code lies about the TrainingAttributes of the new worker
 				supply_->remove_workers(worker_id, 1);
 				const WorkerDescr& workerdescr = *game.tribes().get_worker_descr(worker_id);
-				return workerdescr.create(game, owner(), this, position_);
+				return workerdescr.create(game, get_owner(), this, position_);
 			}
 		}
 
@@ -935,7 +933,7 @@ Worker& Warehouse::launch_worker(Game& game, DescriptionIndex worker_id, const R
 
 void Warehouse::incorporate_worker(EditorGameBase& egbase, Worker* w) {
 	assert(w != nullptr);
-	assert(w->get_owner() == &owner());
+	assert(w->get_owner() == get_owner());
 
 	if (WareInstance* ware = w->fetch_carried_ware(egbase))
 		incorporate_ware(egbase, ware);
@@ -1074,7 +1072,7 @@ bool Warehouse::can_create_worker(Game&, DescriptionIndex const worker) const {
 			} else
 				throw wexception("worker type %s needs \"%s\" to be built but that is neither "
 				                 "a ware type nor a worker type defined in the tribe %s",
-				                 w_desc.descname().c_str(), input_name.c_str(),
+				                 w_desc.name().c_str(), input_name.c_str(),
 				                 owner().tribe().name().c_str());
 		}
 	}
@@ -1092,12 +1090,12 @@ void Warehouse::create_worker(Game& game, DescriptionIndex const worker) {
 		if (owner().tribe().has_ware(id_ware)) {
 			remove_wares(id_ware, buildcost.second);
 			// Update statistics accordingly
-			owner().ware_consumed(id_ware, buildcost.second);
+			get_owner()->ware_consumed(id_ware, buildcost.second);
 		} else
 			remove_workers(owner().tribe().safe_worker_index(input), buildcost.second);
 	}
 
-	incorporate_worker(game, &w_desc.create(game, owner(), this, position_));
+	incorporate_worker(game, &w_desc.create(game, get_owner(), this, position_));
 
 	// Update PlannedWorkers::amount here if appropriate, because this function
 	// may have been called directly by the Economy.
@@ -1269,10 +1267,6 @@ void Warehouse::enable_spawn(Game& game, uint8_t const worker_types_without_cost
 	next_worker_without_cost_spawn_[worker_types_without_cost_index] =
 	   schedule_act(game, WORKER_WITHOUT_COST_SPAWN_INTERVAL);
 }
-void Warehouse::disable_spawn(uint8_t const worker_types_without_cost_index) {
-	assert(next_worker_without_cost_spawn_[worker_types_without_cost_index] != never());
-	next_worker_without_cost_spawn_[worker_types_without_cost_index] = never();
-}
 
 void Warehouse::PlannedWorkers::cleanup() {
 	while (!requests.empty()) {
@@ -1281,43 +1275,42 @@ void Warehouse::PlannedWorkers::cleanup() {
 	}
 }
 
-Warehouse::StockPolicy Warehouse::get_ware_policy(DescriptionIndex ware) const {
+StockPolicy Warehouse::get_ware_policy(DescriptionIndex ware) const {
 	assert(ware < static_cast<DescriptionIndex>(ware_policy_.size()));
 	return ware_policy_[ware];
 }
 
-Warehouse::StockPolicy Warehouse::get_worker_policy(DescriptionIndex ware) const {
+StockPolicy Warehouse::get_worker_policy(DescriptionIndex ware) const {
 	assert(ware < static_cast<DescriptionIndex>(worker_policy_.size()));
 	return worker_policy_[ware];
 }
 
-Warehouse::StockPolicy Warehouse::get_stock_policy(WareWorker waretype,
-                                                   DescriptionIndex wareindex) const {
+StockPolicy Warehouse::get_stock_policy(WareWorker waretype, DescriptionIndex wareindex) const {
 	if (waretype == wwWORKER)
 		return get_worker_policy(wareindex);
 	else
 		return get_ware_policy(wareindex);
 }
 
-void Warehouse::set_ware_policy(DescriptionIndex ware, Warehouse::StockPolicy policy) {
+void Warehouse::set_ware_policy(DescriptionIndex ware, StockPolicy policy) {
 	assert(ware < static_cast<DescriptionIndex>(ware_policy_.size()));
 	ware_policy_[ware] = policy;
 }
 
-void Warehouse::set_worker_policy(DescriptionIndex ware, Warehouse::StockPolicy policy) {
+void Warehouse::set_worker_policy(DescriptionIndex ware, StockPolicy policy) {
 	assert(ware < static_cast<DescriptionIndex>(worker_policy_.size()));
 	worker_policy_[ware] = policy;
 }
 
 /**
- * Check if there are remaining wares with \ref Warehouse::StockPolicy::kRemove,
+ * Check if there are remaining wares with \ref StockPolicy::kRemove,
  * and remove one of them if appropriate.
  */
 void Warehouse::check_remove_stock(Game& game) {
 	if (base_flag().current_wares() < base_flag().total_capacity() / 2) {
 		for (DescriptionIndex ware = 0; ware < static_cast<DescriptionIndex>(ware_policy_.size());
 		     ++ware) {
-			if (get_ware_policy(ware) != Warehouse::StockPolicy::kRemove || !get_wares().stock(ware))
+			if (get_ware_policy(ware) != StockPolicy::kRemove || !get_wares().stock(ware))
 				continue;
 
 			launch_ware(game, ware);
@@ -1327,7 +1320,7 @@ void Warehouse::check_remove_stock(Game& game) {
 
 	for (DescriptionIndex widx = 0; widx < static_cast<DescriptionIndex>(worker_policy_.size());
 	     ++widx) {
-		if (get_worker_policy(widx) != Warehouse::StockPolicy::kRemove || !get_workers().stock(widx))
+		if (get_worker_policy(widx) != StockPolicy::kRemove || !get_workers().stock(widx))
 			continue;
 
 		Worker& worker = launch_worker(game, widx, Requirements());
@@ -1343,17 +1336,28 @@ InputQueue& Warehouse::inputqueue(DescriptionIndex index, WareWorker type) {
 	return portdock_->expedition_bootstrap()->inputqueue(index, type);
 }
 
-void Warehouse::log_general_info(const EditorGameBase& egbase) {
+const BuildingSettings* Warehouse::create_building_settings() const {
+	WarehouseSettings* settings = new WarehouseSettings(descr(), owner().tribe());
+	for (auto& pair : settings->ware_preferences) {
+		pair.second = get_ware_policy(pair.first);
+	}
+	for (auto& pair : settings->worker_preferences) {
+		pair.second = get_worker_policy(pair.first);
+	}
+	settings->launch_expedition = portdock_ && portdock_->expedition_started();
+	return settings;
+}
+
+void Warehouse::log_general_info(const EditorGameBase& egbase) const {
 	Building::log_general_info(egbase);
 
 	if (descr().get_isport()) {
-		PortDock* pd_tmp = portdock_;
-		if (pd_tmp) {
-			molog("Port dock: %u\n", pd_tmp->serial());
-			molog("port needs ship: %s\n", (pd_tmp->get_need_ship()) ? "true" : "false");
-			molog("wares and workers waiting: %u\n", pd_tmp->count_waiting());
-			molog("exped. in progr.: %s\n", (pd_tmp->expedition_started()) ? "true" : "false");
-			Fleet* fleet = pd_tmp->get_fleet();
+		if (portdock_) {
+			molog("Port dock: %u\n", portdock_->serial());
+			molog("port needs ship: %s\n", (portdock_->get_need_ship()) ? "true" : "false");
+			molog("wares and workers waiting: %u\n", portdock_->count_waiting());
+			molog("exped. in progr.: %s\n", (portdock_->expedition_started()) ? "true" : "false");
+			Fleet* fleet = portdock_->get_fleet();
 			if (fleet) {
 				molog("* fleet: %u\n", fleet->serial());
 				molog("  ships: %u, ports: %u\n", fleet->count_ships(), fleet->count_ports());
@@ -1366,4 +1370,4 @@ void Warehouse::log_general_info(const EditorGameBase& egbase) {
 		}
 	}
 }
-}
+}  // namespace Widelands

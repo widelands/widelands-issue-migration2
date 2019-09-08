@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2017 by the Widelands Development Team
+ * Copyright (C) 2008-2019 by the Widelands Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,34 +20,40 @@
 #ifndef WL_NETWORK_GAMECLIENT_H
 #define WL_NETWORK_GAMECLIENT_H
 
+#include <memory>
+
 #include "chat/chat.h"
 #include "logic/game_controller.h"
 #include "logic/game_settings.h"
 #include "logic/player_end_result.h"
-#include "network/netclient.h"
+#include "network/netclient_interface.h"
 
 struct GameClientImpl;
+class InteractiveGameBase;
 
-// TODO(unknown): Use composition instead of inheritance
 /**
  * GameClient manages the lifetime of a network game in which this computer
  * participates as a client.
  *
  * This includes running the game setup screen and the actual game after
  * launch, as well as dealing with the actual network protocol.
+ *
+ * @param internet TODO(Klaus Halfmann): true: coonnect into the open internet via proxy, false
+ * connect locally / via IP.
  */
 struct GameClient : public GameController, public GameSettingsProvider, public ChatProvider {
 	GameClient(const std::pair<NetAddress, NetAddress>& host,
 	           const std::string& playername,
-	           bool internet = false);
+	           bool internet = false,
+	           const std::string& gamename = "");
 
-	virtual ~GameClient();
+	~GameClient() override;
 
 	void run();
 
 	// GameController interface
 	void think() override;
-	void send_player_command(Widelands::PlayerCommand&) override;
+	void send_player_command(Widelands::PlayerCommand*) override;
 	int32_t get_frametime() override;
 	GameController::GameType get_game_type() override;
 
@@ -84,15 +90,18 @@ struct GameClient : public GameController, public GameSettingsProvider, public C
 	virtual void set_player_tribe(uint8_t number,
 	                              const std::string& tribe,
 	                              bool const random_tribe = false) override;
-	void set_player_init(uint8_t number, uint8_t index) override;
+	void set_player_init(uint8_t number, uint8_t initialization_index) override;
 	void set_player_name(uint8_t number, const std::string& name) override;
 	void set_player(uint8_t number, const PlayerSettings& ps) override;
 	void set_player_number(uint8_t number) override;
 	void set_player_team(uint8_t number, Widelands::TeamNumber team) override;
 	void set_player_closeable(uint8_t number, bool closeable) override;
-	void set_player_shared(uint8_t number, uint8_t shared) override;
+	void set_player_shared(PlayerSlot number, Widelands::PlayerNumber shared) override;
 	void set_win_condition_script(const std::string&) override;
 	std::string get_win_condition_script() override;
+
+	void set_peaceful_mode(bool peace) override;
+	bool is_peaceful_mode() override;
 
 	// ChatProvider interface
 	void send(const std::string& msg) override;
@@ -109,7 +118,21 @@ private:
 
 	void sync_report_callback();
 
-	void handle_packet(RecvPacket&);
+	void handle_hello(RecvPacket& packet);
+	void handle_disconnect(RecvPacket& packet);
+	void handle_ping(RecvPacket& packet);
+	void handle_new_file(RecvPacket& packet);
+	void handle_syncrequest(RecvPacket& packet);
+	void handle_setting_map(RecvPacket& packet);
+	void handle_file_part(RecvPacket& packet);
+	void handle_setting_tribes(RecvPacket& packet);
+	void handle_setting_allplayers(RecvPacket& packet);
+	void handle_playercommand(RecvPacket& packet);
+	void handle_chat(RecvPacket& packet);
+	void handle_system_message(RecvPacket& packet);
+	void handle_desync(RecvPacket& packet);
+	void handle_packet(RecvPacket& packet);
+
 	void handle_network();
 	void send_time();
 	void receive_one_player(uint8_t number, StreamRead&);
@@ -119,9 +142,7 @@ private:
 	                bool sendreason = true,
 	                bool showmsg = true);
 
-	NetTransferFile* file_;
 	GameClientImpl* d;
-	bool internet_;
 };
 
 #endif  // end of include guard: WL_NETWORK_GAMECLIENT_H
