@@ -776,7 +776,7 @@ void ProductionSite::log_general_info(const EditorGameBase& egbase) const {
 	Building::log_general_info(egbase);
 
 	molog("is_stopped: %u\n", is_stopped_);
-  molog("main_worker: %i\n", main_worker_);
+	molog("main_worker: %i\n", main_worker_);
 
 	for (InputQueue* queue : input_queues_) {
 		std::string queue_name = "";

@@ -887,18 +887,17 @@ void Flag::log_general_info(const Widelands::EditorGameBase& egbase) const {
 			const WareInstance& wi = *pi.ware;
 			PlayerImmovable* next_move_step = wi.get_next_move_step(egbase);
 			if (next_move_step != nullptr) {
-					Flag& next_flag = next_move_step->base_flag();
-					const PositionList& poslist = next_move_step->get_positions(egbase);
-					molog(" %i/%i: %s(%i), nextstep %i == %s %i @ (%d,%d), %s\n\t", i + 1, ware_capacity_,
-						  wi.descr().name().c_str(), wi.serial(), pi.nextstep.serial(),
-						  next_move_step->descr().name().c_str(),
-						  next_move_step->serial(),
-						  next_flag.get_position().x, next_flag.get_position().y,
-						  pi.pending ? "pending" : "acked by carrier");
+				Flag& next_flag = next_move_step->base_flag();
+				const PositionList& poslist = next_move_step->get_positions(egbase);
+				molog(" %i/%i: %s(%i), nextstep %i == %s %i @ (%d,%d), %s\n\t", i + 1, ware_capacity_,
+				      wi.descr().name().c_str(), wi.serial(), pi.nextstep.serial(),
+				      next_move_step->descr().name().c_str(), next_move_step->serial(),
+				      next_flag.get_position().x, next_flag.get_position().y,
+				      pi.pending ? "pending" : "acked by carrier");
 			} else {
 				molog(" %i/%i: %s(%i), nextstep %i == no next flag, %s\n\t", i + 1, ware_capacity_,
-					  wi.descr().name().c_str(), wi.serial(), pi.nextstep.serial(),
-					  pi.pending ? "pending" : "acked by carrier");
+				      wi.descr().name().c_str(), wi.serial(), pi.nextstep.serial(),
+				      pi.pending ? "pending" : "acked by carrier");
 			}
 			Transfer* transf = wi.get_transfer();
 			if (transf != nullptr) {
