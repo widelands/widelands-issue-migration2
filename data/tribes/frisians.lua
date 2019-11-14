@@ -278,8 +278,6 @@ tribes:new_tribe {
       "frisians_tavern",
       "frisians_drinking_hall",
       "frisians_barracks",
-      "frisians_weaving_mill",
-      "frisians_shipyard",
 
       -- Big
       "frisians_reindeer_farm",
@@ -306,6 +304,10 @@ tribes:new_tribe {
       "frisians_outpost",
       "frisians_tower",
       "frisians_fortress",
+
+      -- Seafaring Sites - these are only displayed on seafaring maps
+      "frisians_weaving_mill",
+      "frisians_shipyard",
 
       -- Partially Finished Buildings - these are the same 2 buildings for all tribes
       "constructionsite",
