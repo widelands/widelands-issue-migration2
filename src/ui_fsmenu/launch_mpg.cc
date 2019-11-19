@@ -108,12 +108,12 @@ FullscreenMenuLaunchMPG::FullscreenMenuLaunchMPG(GameSettingsProvider* const set
      // Buttons
      change_map_or_save_(this,
                          "change_map_or_save",
-                         right_column_x_ + butw_ - buth_,
+                         right_column_x_,
                          get_h() * 3 / 20,
-                         buth_,
+                         butw_,
                          buth_,
                          UI::ButtonStyle::kFsMenuSecondary,
-                         g_gr->images().get("images/wui/menus/toggle_minimap.png"),
+                         _("(no map)"),
                          _("Change map or saved game")),
      help_button_(this,
                   "help",
@@ -161,29 +161,29 @@ FullscreenMenuLaunchMPG::FullscreenMenuLaunchMPG(GameSettingsProvider* const set
           g_gr->styles().font_style(UI::FontStyle::kFsGameSetupHeadings)),
      wincondition_type_(this,
                         right_column_x_ + (butw_ / 2),
-                        get_h() * 10 / 20 - 1.5 * label_height_,
+                        get_h() * 15 / 20 - 9 * label_height_,
                         0,
                         0,
                         _("Type of game"),
                         UI::Align::kCenter,
                         g_gr->styles().font_style(UI::FontStyle::kFsGameSetupHeadings)),
-
      map_info_(this,
                right_column_x_,
                get_h() * 2 / 10,
                butw_,
-               get_h() * 23 / 80 - 1.6 * label_height_,
+               get_h() * 15 / 20 - 9.25 * label_height_ - get_h() * 2 / 10,
                UI::PanelStyle::kFsMenu),
      help_(nullptr),
 
      // Variables and objects used in the menu
      chat_(nullptr) {
-	peaceful_.set_pos(Vector2i(right_column_x_, get_h() * 11 / 20 - 2 * label_height_ +
-	                                               win_condition_dropdown_.get_h() + padding_));
-	ok_.set_pos(Vector2i(right_column_x_, peaceful_.get_y() + peaceful_.get_h() + padding_ + 1));
-	back_.set_pos(Vector2i(right_column_x_, get_h() * 218 / 240));
 	win_condition_dropdown_.set_pos(
-	   Vector2i(right_column_x_, get_h() * 11 / 20 - 2 * label_height_));
+	   Vector2i(right_column_x_, get_h() * 4 / 5 - 9.5 * label_height_));
+	peaceful_.set_pos(Vector2i(right_column_x_, get_h() * 4 / 5 - 9.5 * label_height_ +
+	                                               win_condition_dropdown_.get_h() + padding_));
+	back_.set_pos(Vector2i(right_column_x_, get_h() * 218 / 240 - buth_ - padding_));
+	ok_.set_pos(Vector2i(right_column_x_, get_h() * 218 / 240));
+
 	title_.set_text(_("Multiplayer Game Setup"));
 	change_map_or_save_.sigclicked.connect(
 	   boost::bind(&FullscreenMenuLaunchMPG::change_map_or_save, boost::ref(*this)));
@@ -196,8 +196,13 @@ FullscreenMenuLaunchMPG::FullscreenMenuLaunchMPG(GameSettingsProvider* const set
 	map_.set_font_scale(scale_factor());
 	wincondition_type_.set_font_scale(scale_factor());
 
-	mapname_.set_text(_("(no map)"));
-	map_info_.set_text(_("The host has not yet selected a map or saved game."));
+	if (settings_->can_change_map()) {
+		map_info_.set_text(_("Please selected a map or saved game."));
+	} else {
+		change_map_or_save_.set_visible(settings_->can_change_map());
+		mapname_.set_text(_("(no map)"));
+		map_info_.set_text(_("The host has not yet selected a map or saved game."));
+	}
 
 	mpsg_ = new MultiPlayerSetupGroup(
 	   this, get_w() * 3 / 80, change_map_or_save_.get_y(), get_w() * 53 / 80,
@@ -234,9 +239,10 @@ void FullscreenMenuLaunchMPG::layout() {
  */
 void FullscreenMenuLaunchMPG::set_chat_provider(ChatProvider& chat) {
 	delete chat_;
-	chat_ =
-	   new GameChatPanel(this, get_w() * 3 / 80, ok_.get_y(), get_w() * 53 / 80,
-	                     back_.get_y() + back_.get_h() - ok_.get_y(), chat, UI::PanelStyle::kFsMenu);
+	chat_ = new GameChatPanel(
+	   this, get_w() * 3 / 80, mpsg_->get_y() + mpsg_->get_h() + padding_, get_w() * 53 / 80,
+	   ok_.get_y() + ok_.get_h() - mpsg_->get_y() - mpsg_->get_h() - padding_ - 1, chat,
+	   UI::PanelStyle::kFsMenu);
 }
 
 /**
@@ -425,8 +431,11 @@ void FullscreenMenuLaunchMPG::refresh() {
 			// It will also translate 'false-positively' on any user-made map which shares a name with
 			// the official maps, but this should not be a problem to worry about.
 			i18n::Textdomain td("maps");
-			mapname_.set_text(_(settings.mapname));
-			// map_info_.set_text(infotext);
+			if (settings_->can_change_map()) {
+				change_map_or_save_.set_title(_(settings.mapname));
+			} else {
+				mapname_.set_text(_(settings.mapname));
+			}
 		}
 	}
 
