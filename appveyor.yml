@@ -28,6 +28,7 @@ shallow_clone: true
 branches:
   only:
     - master
+    - stonerl
 
 build_script:
   # copy modified libintl.h to solve an issue with boost
@@ -49,8 +50,8 @@ artifacts:
 
 platform:
   - x64
-  - x86
+  #- x86
 
 configuration:
   - Release
-  - Debug
+  #- Debug
