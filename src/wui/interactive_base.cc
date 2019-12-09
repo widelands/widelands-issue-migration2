@@ -1368,7 +1368,8 @@ bool InteractiveBase::handle_key(bool const down, SDL_Keysym const code) {
 	}
 
 	// If one of the arrow keys is pressed, scroll this distance
-	constexpr uint32_t kScrollDistance = 10;
+	uint32_t kScrollDistanceY = g_gr->get_yres() / 4;
+	uint32_t kScrollDistanceX = g_gr->get_xres() / 4;
 
 	if (down) {
 		switch (code.sym) {
@@ -1379,7 +1380,15 @@ bool InteractiveBase::handle_key(bool const down, SDL_Keysym const code) {
 			}
 			FALLS_THROUGH;
 		case SDLK_UP:
-			map_view_.pan_by(Vector2i(0, -kScrollDistance));
+			if (get_key_state(SDL_SCANCODE_LEFT)) {
+				map_view_.pan_by(
+				   Vector2i(-kScrollDistanceX, -kScrollDistanceY), MapView::Transition::Smooth);
+			} else if (get_key_state(SDL_SCANCODE_RIGHT)) {
+				map_view_.pan_by(
+				   Vector2i(kScrollDistanceX, -kScrollDistanceY), MapView::Transition::Smooth);
+			} else {
+				map_view_.pan_by(Vector2i(0, -kScrollDistanceY), MapView::Transition::Smooth);
+			}
 			return true;
 		case SDLK_KP_2:
 			if (SDL_GetModState() & KMOD_NUM) {
@@ -1387,7 +1396,15 @@ bool InteractiveBase::handle_key(bool const down, SDL_Keysym const code) {
 			}
 			FALLS_THROUGH;
 		case SDLK_DOWN:
-			map_view_.pan_by(Vector2i(0, kScrollDistance));
+			if (get_key_state(SDL_SCANCODE_LEFT)) {
+				map_view_.pan_by(
+				   Vector2i(-kScrollDistanceX, kScrollDistanceY), MapView::Transition::Smooth);
+			} else if (get_key_state(SDL_SCANCODE_RIGHT)) {
+				map_view_.pan_by(
+				   Vector2i(kScrollDistanceX, kScrollDistanceY), MapView::Transition::Smooth);
+			} else {
+				map_view_.pan_by(Vector2i(0, kScrollDistanceY), MapView::Transition::Smooth);
+			}
 			return true;
 		case SDLK_KP_4:
 			if (SDL_GetModState() & KMOD_NUM) {
@@ -1395,7 +1412,15 @@ bool InteractiveBase::handle_key(bool const down, SDL_Keysym const code) {
 			}
 			FALLS_THROUGH;
 		case SDLK_LEFT:
-			map_view_.pan_by(Vector2i(-kScrollDistance, 0));
+			if (get_key_state(SDL_SCANCODE_UP)) {
+				map_view_.pan_by(
+				   Vector2i(-kScrollDistanceX, -kScrollDistanceY), MapView::Transition::Smooth);
+			} else if (get_key_state(SDL_SCANCODE_DOWN)) {
+				map_view_.pan_by(
+				   Vector2i(-kScrollDistanceX, kScrollDistanceY), MapView::Transition::Smooth);
+			} else {
+				map_view_.pan_by(Vector2i(-kScrollDistanceX, 0), MapView::Transition::Smooth);
+			}
 			return true;
 		case SDLK_KP_6:
 			if (SDL_GetModState() & KMOD_NUM) {
@@ -1403,8 +1428,45 @@ bool InteractiveBase::handle_key(bool const down, SDL_Keysym const code) {
 			}
 			FALLS_THROUGH;
 		case SDLK_RIGHT:
-			map_view_.pan_by(Vector2i(kScrollDistance, 0));
+			if (get_key_state(SDL_SCANCODE_UP)) {
+				map_view_.pan_by(
+				   Vector2i(kScrollDistanceX, -kScrollDistanceY), MapView::Transition::Smooth);
+			} else if (get_key_state(SDL_SCANCODE_DOWN)) {
+				map_view_.pan_by(
+				   Vector2i(kScrollDistanceX, kScrollDistanceY), MapView::Transition::Smooth);
+			} else {
+				map_view_.pan_by(Vector2i(kScrollDistanceX, 0), MapView::Transition::Smooth);
+			}
 			return true;
+		case SDLK_KP_1:
+			if (SDL_GetModState() & KMOD_NUM) {
+				break;
+			}
+			map_view_.pan_by(
+			   Vector2i(-kScrollDistanceX, kScrollDistanceY), MapView::Transition::Smooth);
+			return true;
+		case SDLK_KP_3:
+			if (SDL_GetModState() & KMOD_NUM) {
+				break;
+			}
+			map_view_.pan_by(
+			   Vector2i(kScrollDistanceX, kScrollDistanceY), MapView::Transition::Smooth);
+			return true;
+		case SDLK_KP_7:
+			if (SDL_GetModState() & KMOD_NUM) {
+				break;
+			}
+			map_view_.pan_by(
+			   Vector2i(-kScrollDistanceX, -kScrollDistanceY), MapView::Transition::Smooth);
+			return true;
+		case SDLK_KP_9:
+			if (SDL_GetModState() & KMOD_NUM) {
+				break;
+			}
+			map_view_.pan_by(
+			   Vector2i(kScrollDistanceX, -kScrollDistanceY), MapView::Transition::Smooth);
+			return true;
+
 #ifndef NDEBUG  //  only in debug builds
 		case SDLK_F6:
 			GameChatMenu::create_script_console(
