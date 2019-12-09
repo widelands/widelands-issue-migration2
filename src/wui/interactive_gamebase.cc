@@ -282,12 +282,24 @@ void InteractiveGameBase::rebuild_gamespeed_menu() {
 void InteractiveGameBase::gamespeed_menu_selected(GameSpeedEntry entry) {
 	switch (entry) {
 	case GameSpeedEntry::kIncrease: {
-		increase_gamespeed();
+		if (SDL_GetModState() & KMOD_SHIFT) {
+			increase_gamespeed(250);
+		} else if (SDL_GetModState() & KMOD_CTRL) {
+			increase_gamespeed(10000);
+		} else {
+			increase_gamespeed(1000);
+		}
 		// Keep the window open so that the player can click this multiple times
 		gamespeedmenu_.toggle();
 	} break;
 	case GameSpeedEntry::kDecrease: {
-		decrease_gamespeed();
+		if (SDL_GetModState() & KMOD_SHIFT) {
+			decrease_gamespeed(250);
+		} else if (SDL_GetModState() & KMOD_CTRL) {
+			decrease_gamespeed(10000);
+		} else {
+			decrease_gamespeed(1000);
+		}
 		// Keep the window open so that the player can click this multiple times
 		gamespeedmenu_.toggle();
 	} break;
@@ -299,16 +311,54 @@ void InteractiveGameBase::gamespeed_menu_selected(GameSpeedEntry entry) {
 	}
 }
 
-void InteractiveGameBase::increase_gamespeed() {
+void InteractiveGameBase::increase_gamespeed(uint32_t speed) {
 	if (GameController* const ctrl = get_game()->game_controller()) {
-		ctrl->set_desired_speed(ctrl->desired_speed() + 1000);
+		uint32_t const current_speed = ctrl->desired_speed();
+		switch (speed) {
+		case 250:
+			ctrl->set_desired_speed(current_speed + speed);
+			break;
+		case 1000:
+			if (current_speed < 1000) {
+				ctrl->set_desired_speed(1000);
+			} else {
+				ctrl->set_desired_speed(current_speed - current_speed % speed + speed);
+			}
+			break;
+		case 10000:
+			ctrl->set_desired_speed(
+			   current_speed >= speed ? current_speed - current_speed % speed + speed : speed);
+			break;
+		default:
+			break;
+		}
 	}
 }
 
-void InteractiveGameBase::decrease_gamespeed() {
+void InteractiveGameBase::decrease_gamespeed(uint32_t speed) {
 	if (GameController* const ctrl = get_game()->game_controller()) {
-		uint32_t const speed = ctrl->desired_speed();
-		ctrl->set_desired_speed(1000 < speed ? speed - 1000 : 0);
+		uint32_t const current_speed = ctrl->desired_speed();
+		switch (speed) {
+		case 250:
+			ctrl->set_desired_speed(current_speed > speed ? current_speed - speed : 0);
+			break;
+		case 1000:
+			if (current_speed >= 2000) {
+				ctrl->set_desired_speed(current_speed - current_speed % speed - speed);
+			} else if (current_speed > 1000) {
+				ctrl->set_desired_speed(1000);
+			} else {
+				ctrl->set_desired_speed(0);
+			}
+			break;
+		case 10000:
+			ctrl->set_desired_speed(
+			   current_speed > speed ? current_speed - current_speed % speed - speed : 0);
+			break;
+		default:
+			ctrl->set_desired_speed(1000);
+			break;
+		}
 	}
 }
 
@@ -328,13 +378,29 @@ bool InteractiveGameBase::handle_key(bool down, SDL_Keysym code) {
 	if (down) {
 		switch (code.sym) {
 		case SDLK_PAGEUP:
-			increase_gamespeed();
+			if (code.mod & KMOD_SHIFT) {
+				increase_gamespeed(250);
+			} else if (code.mod & KMOD_CTRL) {
+				increase_gamespeed(10000);
+			} else {
+				increase_gamespeed(1000);
+			}
 			return true;
 		case SDLK_PAUSE:
-			toggle_game_paused();
+			if (code.mod & KMOD_SHIFT) {
+				decrease_gamespeed(0);
+			} else {
+				toggle_game_paused();
+			}
 			return true;
 		case SDLK_PAGEDOWN:
-			decrease_gamespeed();
+			if (code.mod & KMOD_SHIFT) {
+				decrease_gamespeed(250);
+			} else if (code.mod & KMOD_CTRL) {
+				decrease_gamespeed(10000);
+			} else {
+				decrease_gamespeed(1000);
+			}
 			return true;
 		case SDLK_ESCAPE:
 			InteractiveGameBase::toggle_mainmenu();
