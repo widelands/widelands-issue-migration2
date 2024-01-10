@@ -2259,6 +2259,7 @@ MapObjectDescription
 const char LuaMapObjectDescription::className[] = "MapObjectDescription";
 const MethodType<LuaMapObjectDescription> LuaMapObjectDescription::Methods[] = {
    METHOD(LuaMapObjectDescription, helptexts),
+   METHOD(LuaMapObjectDescription, has_attribute),
    {nullptr, nullptr},
 };
 const PropertyType<LuaMapObjectDescription> LuaMapObjectDescription::Properties[] = {
@@ -2461,6 +2462,25 @@ int LuaMapObjectDescription::helptexts(lua_State* L) {
 }
 
 /* RST
+   .. method:: has_attribute(attribute_name)
+
+      Returns :const:`true` if the map object has the attribute, :const:`false` otherwise.
+
+      :arg attribute_name: The attribute that we are checking for.
+      :type attribute_name: :class:`string`
+
+*/
+int LuaMapObjectDescription::has_attribute(lua_State* L) {
+	if (lua_gettop(L) != 2) {
+		report_error(L, "Takes only one argument.");
+	}
+	const Widelands::MapObjectDescr::AttributeIndex attribute_id =
+	   Widelands::MapObjectDescr::get_attribute_id(luaL_checkstring(L, 2));
+	lua_pushboolean(L, static_cast<int>(get()->has_attribute(attribute_id)));
+	return 1;
+}
+
+/* RST
 ImmovableDescription
 --------------------
 
@@ -2471,7 +2491,6 @@ ImmovableDescription
 */
 const char LuaImmovableDescription::className[] = "ImmovableDescription";
 const MethodType<LuaImmovableDescription> LuaImmovableDescription::Methods[] = {
-   METHOD(LuaImmovableDescription, has_attribute),
    METHOD(LuaImmovableDescription, probability_to_grow),
    {nullptr, nullptr},
 };
@@ -2589,31 +2608,6 @@ int LuaImmovableDescription::get_size(lua_State* L) {
 		report_error(L, "Unknown size %i in LuaImmovableDescription::get_size: %s", get()->get_size(),
 		             get()->name().c_str());
 	}
-	return 1;
-}
-
-/*
- ==========================================================
- METHODS
- ==========================================================
- */
-
-/* RST
-   .. method:: has_attribute(attribute_name)
-
-      Returns :const:`true` if the immovable has the attribute, :const:`false` otherwise.
-
-      :arg attribute_name: The attribute that we are checking for.
-      :type attribute_name: :class:`string`
-
-*/
-int LuaImmovableDescription::has_attribute(lua_State* L) {
-	if (lua_gettop(L) != 2) {
-		report_error(L, "Takes only one argument.");
-	}
-	const Widelands::MapObjectDescr::AttributeIndex attribute_id =
-	   Widelands::MapObjectDescr::get_attribute_id(luaL_checkstring(L, 2));
-	lua_pushboolean(L, static_cast<int>(get()->has_attribute(attribute_id)));
 	return 1;
 }
 
@@ -4741,13 +4735,14 @@ int LuaMapObject::destroy(lua_State* L) {
 
       Returns :const:`true` if the map object has this attribute, :const:`false` otherwise.
 
-      .. note:: This method does exist for all MapObjects, but its data only gets initialised for
-                immovables and for critters. (It always returns :const:`false` for other types.)
 
       :arg attribute: The attribute to check for.
       :type attribute: :class:`string`
 */
 int LuaMapObject::has_attribute(lua_State* L) {
+	if (lua_gettop(L) != 2) {
+		report_error(L, "Takes only one argument.");
+	}
 	Widelands::EditorGameBase& egbase = get_egbase(L);
 	Widelands::MapObject* obj = get_or_zero(egbase);
 	if (obj == nullptr) {
