@@ -43,8 +43,10 @@ std::string get_file_content(FileSystem* fs, const std::string& filename) {
 }
 
 // Runs the 'content' as a lua script identified by 'identifier' in 'L'.
-std::unique_ptr<LuaTable>
-run_string_as_script(lua_State* L, const std::string& identifier, const std::string& content) {
+std::unique_ptr<LuaTable> run_string_as_script(lua_State* L,
+                                               const std::string& identifier,
+                                               const std::string& content,
+                                               const bool keep_lua_table = false) {
 	MutexLock m(MutexLock::ID::kLua);
 
 	// Get the current value of __file__
@@ -80,7 +82,9 @@ run_string_as_script(lua_State* L, const std::string& identifier, const std::str
 	lua_setglobal(L, "__file__");
 
 	std::unique_ptr<LuaTable> return_value(new LuaTable(L));
-	lua_pop(L, 1);
+	if (!keep_lua_table) {
+		lua_pop(L, 1);
+	}
 	return return_value;
 }
 
@@ -95,7 +99,8 @@ int check_return_value_for_errors(lua_State* L, int rv) {
 	return rv;
 }
 
-std::unique_ptr<LuaTable> run_script(lua_State* L, const std::string& path, FileSystem* fs) {
+std::unique_ptr<LuaTable>
+run_script(lua_State* L, const std::string& path, FileSystem* fs, const bool keep_lua_table) {
 	const std::string content = get_file_content(fs, path);
-	return run_string_as_script(L, path, content);
+	return run_string_as_script(L, path, content, keep_lua_table);
 }
